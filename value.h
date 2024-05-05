@@ -1,0 +1,74 @@
+#ifndef VALUE_H
+#define VALUE_H
+
+#include<string>
+#include<memory>
+
+enum class ValueType{
+    BOOLEAN,
+    NUMERIC,
+    STRING,
+    NIL,
+    SYMBOL,
+    PAIR
+};
+
+class Value;
+using ValuePtr = std::shared_ptr<Value>;
+
+class Value{
+    private:
+        ValueType type;
+    protected:
+        Value(ValueType type):type{type} {}
+    public:
+        ValueType getType()const{
+            return type;
+        }
+        virtual std::string toString()const=0;
+};
+
+class BooleanValue:public Value{
+    private:
+        bool value;
+    public:
+        BooleanValue(bool value):Value(ValueType::BOOLEAN),value{value}{}
+        std::string toString() const override;
+};
+class NumericValue:public Value{
+    private:
+        double value;
+    public:
+        NumericValue(double value):Value(ValueType::NUMERIC),value{value} {}
+        std::string toString() const override;
+};
+class StringValue:public Value{
+    private:
+        std::string value;
+    public:
+        StringValue(const std::string& value):Value(ValueType::STRING),value{value}{}
+        std::string toString() const override;
+};
+class NilValue:public Value{
+    public:
+        NilValue():Value(ValueType::NIL){}
+        std::string toString() const override;
+};
+class SymbolValue:public Value{
+    private:
+        std::string name;
+    public:
+        SymbolValue(const std::string& name):Value(ValueType::SYMBOL),name{name}{}
+        std::string toString() const override;
+};
+class PairValue:public Value{
+    private:
+        ValuePtr first,second;
+    public:
+        PairValue(ValuePtr p1,ValuePtr p2):Value(ValueType::PAIR),first(std::move(p1)),second(std::move(p2)){} 
+        std::string toString() const override;
+};
+
+std::ostream& operator<<(std::ostream& os ,const Value& value);
+
+#endif
