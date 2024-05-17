@@ -3,6 +3,9 @@
 
 #include<string>
 #include<memory>
+#include<vector>
+#include <optional>
+#include "./error.h"
 
 enum class ValueType{
     BOOLEAN,
@@ -26,6 +29,9 @@ class Value{
             return type;
         }
         virtual std::string toString()const=0;
+        bool isSelfEvaluating(ValueType);
+        virtual std::vector<ValuePtr>toVector();
+        std::optional<std::string> asSymbol();
 };
 
 class BooleanValue:public Value{
@@ -63,10 +69,12 @@ class SymbolValue:public Value{
 };
 class PairValue:public Value{
     private:
+    public:
         ValuePtr first,second;
     public:
         PairValue(ValuePtr p1,ValuePtr p2):Value(ValueType::PAIR),first(std::move(p1)),second(std::move(p2)){} 
         std::string toString() const override;
+        std::vector<ValuePtr>toVector()override;
 };
 
 std::ostream& operator<<(std::ostream& os ,const Value& value);
