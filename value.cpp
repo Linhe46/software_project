@@ -8,11 +8,18 @@ bool Value::isSelfEvaluating(ValueType type) {
 std::vector<ValuePtr>Value::toVector(){//非列表抛出异常
     throw LispError("Not a list");
 }
-std::optional<std::string> Value::asSymbol(){//获取符号名
+std::optional<std::string> Value::asSymbol() const{//获取符号名
     if(this->type!=ValueType::SYMBOL)
         return std::nullopt;
     return this->toString();
 }
+double Value::asNumber() const{
+        throw LispError("Not a Numeric type");
+}
+double NumericValue::asNumber()const{
+    return value;
+}
+
 std::string BooleanValue::toString() const{
     return (value? "#t" : "#f");
 }
@@ -48,8 +55,10 @@ std::string PairValue::toString() const{
 }
 
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
+
     std::vector<ValuePtr>values;
-    auto pair=static_cast<PairValue&>(*this);
+    auto& pair=static_cast<PairValue&>(*this);
+
     if(pair.first->getType()!=ValueType::PAIR){
         if(pair.first->getType()!=ValueType::NIL)
         values.push_back(pair.first);}
@@ -66,7 +75,17 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     }
     return values;
 }
+ValuePtr PairValue::getRightList() const{
+    return std::make_shared<PairValue>(second,static_cast<ValuePtr>(std::make_shared<NilValue>()));
+}
 
 std::ostream& operator<<(std::ostream& os, const Value& value){
     return os<<value.toString();
+}
+
+std::string BuiltinProcValue::toString()const{
+    return std::string("#<procedure>");
+}
+ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
+    return func(params);
 }

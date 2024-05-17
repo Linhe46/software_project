@@ -13,7 +13,8 @@ enum class ValueType{
     STRING,
     NIL,
     SYMBOL,
-    PAIR
+    PAIR,
+    PROC//过程值
 };
 
 class Value;
@@ -28,10 +29,11 @@ class Value{
         ValueType getType()const{
             return type;
         }
-        virtual std::string toString()const=0;
+        virtual std::string toString() const=0;
         bool isSelfEvaluating(ValueType);
         virtual std::vector<ValuePtr>toVector();
-        std::optional<std::string> asSymbol();
+        std::optional<std::string> asSymbol() const;
+        virtual double asNumber() const;
 };
 
 class BooleanValue:public Value{
@@ -47,6 +49,7 @@ class NumericValue:public Value{
     public:
         NumericValue(double value):Value(ValueType::NUMERIC),value{value} {}
         std::string toString() const override;
+        double asNumber()const override;
 };
 class StringValue:public Value{
     private:
@@ -70,13 +73,23 @@ class SymbolValue:public Value{
 class PairValue:public Value{
     private:
     public:
-        ValuePtr first,second;
+        ValuePtr first,second;//破坏封装性？
     public:
         PairValue(ValuePtr p1,ValuePtr p2):Value(ValueType::PAIR),first(std::move(p1)),second(std::move(p2)){} 
         std::string toString() const override;
         std::vector<ValuePtr>toVector()override;
+        ValuePtr getRightList() const;
 };
 
 std::ostream& operator<<(std::ostream& os ,const Value& value);
 
+using BuiltinFuncType=ValuePtr(const std::vector<ValuePtr>&);
+class BuiltinProcValue:public Value{
+    private:
+        BuiltinFuncType* func=nullptr;
+    public:
+        BuiltinProcValue(BuiltinFuncType* func_):func(func_),Value(ValueType::PROC){}
+        std::string toString() const override;
+        ValuePtr operator()(const std::vector<ValuePtr>&params);
+};
 #endif

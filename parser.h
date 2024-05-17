@@ -9,7 +9,6 @@
 class Parser {
 private:
     std::deque<TokenPtr> tokens;
-
 public:
     Parser(std::deque<TokenPtr> tokens_) : tokens(std::move(tokens_)){};
     ValuePtr parse();

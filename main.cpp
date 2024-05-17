@@ -20,7 +20,7 @@ struct TestCtx {
 
 int main() {
     // RJSJ_TEST(TestCtx, Lv2, Lv2Only);
-    RJSJ_TEST(TestCtx, Lv2, Lv3);
+    //RJSJ_TEST(TestCtx, Lv2, Lv3);
     while (true) {
         try {
             std::cout << ">>> ";
@@ -35,9 +35,6 @@ int main() {
             EvalEnv env;
             auto result = env.eval(std::move(value));
             std::cout << result->toString() << std::endl;
-            for (auto& token : tokens) {
-                std::cout << *token << std::endl;
-            }
         } catch (std::runtime_error& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
