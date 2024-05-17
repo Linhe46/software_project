@@ -58,27 +58,18 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
 
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);
-
-    if(pair.first->getType()!=ValueType::PAIR){
-        if(pair.first->getType()!=ValueType::NIL)
-        values.push_back(pair.first);}
-    else {
-        auto child_vec=pair.first->toVector();
-        std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
-    }
-    if(pair.second->getType()!=ValueType::PAIR){
-        if(pair.second->getType()!=ValueType::NIL)
-        values.push_back(pair.second);}
-    else {
+    if(pair.first->getType()!=ValueType::NIL)
+        values.push_back(pair.first);
+    if(pair.second->isSelfEvaluating(ValueType::NIL))
+        return values;
+    else if(pair.second->isSelfEvaluating(ValueType::PAIR))
+    {//递归展开右边部分
         auto child_vec=pair.second->toVector();
         std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
     }
+    else values.push_back(pair.second);
     return values;
 }
-ValuePtr PairValue::getRightList() const{
-    return std::make_shared<PairValue>(second,static_cast<ValuePtr>(std::make_shared<NilValue>()));
-}
-
 std::ostream& operator<<(std::ostream& os, const Value& value){
     return os<<value.toString();
 }
@@ -88,4 +79,7 @@ std::string BuiltinProcValue::toString()const{
 }
 ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
     return func(params);
+}
+ValuePtr PairValue::getRight()const{
+    return this->second->isSelfEvaluating(ValueType::NIL)?nullptr:this->second;
 }

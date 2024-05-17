@@ -5,6 +5,5 @@
 #include <unordered_map>
 std::unordered_map<std::string,ValuePtr>procDict();
 ValuePtr add(const std::vector<ValuePtr>& params);
-extern ValuePtr addVal;
-
+ValuePtr print(const std::vector<ValuePtr>& params);
 #endif

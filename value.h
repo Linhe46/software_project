@@ -78,7 +78,7 @@ class PairValue:public Value{
         PairValue(ValuePtr p1,ValuePtr p2):Value(ValueType::PAIR),first(std::move(p1)),second(std::move(p2)){} 
         std::string toString() const override;
         std::vector<ValuePtr>toVector()override;
-        ValuePtr getRightList() const;
+        ValuePtr getRight() const;
 };
 
 std::ostream& operator<<(std::ostream& os ,const Value& value);

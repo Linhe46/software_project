@@ -11,6 +11,7 @@ EvalEnv::EvalEnv(){
         symbolList.insert({pair.first,pair.second});
 }
 std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
+    if(!expr) return {};//无剩余变量
     std::vector<ValuePtr> result;
     std::ranges::transform(expr->toVector(),
                            std::back_inserter(result),
@@ -32,15 +33,9 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         std::vector<ValuePtr>v=expr->toVector();
         if(v[0]->asSymbol()=="define"s){//实现define name value
             if(auto name=v[1]->asSymbol()){
-                if(v.size()<3) throw LispError("Malformed define.");//未定义值
-                else if(v.size()==3)
-                    symbolList[name.value()]=eval(v[2]);//x的值非列表
-                else {//x的值为列表
-                    ValuePtr pair=std::make_shared<NilValue>();
-                    for(int i=v.size()-1;i>1;i--)
-                        pair=std::make_shared<PairValue>(std::move(v[i]),std::move(pair));
-                    symbolList[name.value()]=eval(std::move(pair));
-                }
+                if(v.size()<3) 
+                    throw LispError("Malformed define.");//未定义值
+                symbolList[name.value()]=eval(v[2]);
                 return std::make_shared<NilValue>();
             }
             else throw LispError("Malformed define.");//定义错误
@@ -49,7 +44,8 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         else{
             auto pairVar=static_cast<PairValue&>(*expr);
             ValuePtr proc=this->eval(std::move(v[0]));
-            std::vector<ValuePtr>args=evalList(pairVar.getRightList());//剩余的变量
+            ValuePtr right=pairVar.getRight();
+            std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
             return this->apply(proc,args);
         }
         //else throw LispError("Unimplemented");
