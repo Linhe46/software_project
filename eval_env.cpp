@@ -3,11 +3,12 @@
 #include <algorithm>
 #include <iterator>
 #include <ranges>
+using namespace std::literals;
 
 std::unordered_map<std::string,ValuePtr>symbolList;
-EvalEnv::EvalEnv(){
+EvalEnv::EvalEnv(){//初始化求值器
     auto procs=procDict();
-    for(auto pair:procs)
+    for(auto pair:procs)//加载内置过程
         symbolList.insert({pair.first,pair.second});
 }
 std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
@@ -19,7 +20,7 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     return result;
 }
 ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
-    if(proc->isSelfEvaluating(ValueType::PROC)){
+    if(proc->isProc()){
         auto procVar=static_cast<BuiltinProcValue&>(*proc);
         return procVar(args);
     }
@@ -27,14 +28,14 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
         throw LispError("Unimplemented");
     }
 }
+
 ValuePtr EvalEnv::eval(ValuePtr expr) {
-    if (expr->isSelfEvaluating(ValueType::PAIR)){//PAIR型，即作为列表处理
-        using namespace std::literals;
+    if (expr->isPair()){//PAIR型，即作为列表处理
         std::vector<ValuePtr>v=expr->toVector();
         if(v[0]->asSymbol()=="define"s){//实现define name value
             if(auto name=v[1]->asSymbol()){
                 if(v.size()<3) 
-                    throw LispError("Malformed define.");//未定义值
+                    throw LispError("Malformed define.");//错误的定义格式
                 symbolList[name.value()]=eval(v[2]);
                 return std::make_shared<NilValue>();
             }
@@ -50,12 +51,9 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         }
         //else throw LispError("Unimplemented");
     }
-    else if (//直接返回值型变量
-        expr->isSelfEvaluating(ValueType::BOOLEAN) ||
-        expr->isSelfEvaluating(ValueType::NUMERIC) ||
-        expr->isSelfEvaluating(ValueType::STRING))
+    else if (expr->isSelfEvaluating())//可自求值
         return expr;
-    else if(expr->isSelfEvaluating(ValueType::SYMBOL)){//对于符号，获取其值
+    else if(expr->isSymbol()){
         if(auto name=expr->asSymbol()){
             auto it=symbolList.find(name.value());
             if(it!=symbolList.end())
@@ -63,7 +61,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
             else throw LispError("Variable "+name.value()+" not defined.");
         }
     }
-    else if (expr->isSelfEvaluating(ValueType::NIL))
+    else if (expr->isNil())//禁止对空表求值
         throw LispError("Evaluating nil is prohibited.");
     else
         throw LispError("Unimplemented");

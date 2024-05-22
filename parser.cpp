@@ -7,7 +7,7 @@ std::unordered_map<TokenType, std::string> isQuotes{
 
 ValuePtr Parser::parse() {
     auto token = std::move(tokens.front());
-    tokens.pop_front();  // 需要弹出
+    tokens.pop_front();  // 弹出
     if (token->getType() == TokenType::NUMERIC_LITERAL) {
         auto value = static_cast<NumericLiteralToken&>(*token).getValue();
         return std::make_shared<NumericValue>(value);
@@ -22,12 +22,13 @@ ValuePtr Parser::parse() {
         return std::make_shared<SymbolValue>(value);
     } else if (token->getType() == TokenType::LEFT_PAREN) {
         return this->parseTails();
-    } else if (isQuotes.find(token->getType()) != isQuotes.end()) {
+    } else if (isQuotes.find(token->getType()) != isQuotes.end()) {//三种引号
         std::string quote_type = isQuotes[token->getType()];
         return std::make_shared<PairValue>(
             std::make_shared<SymbolValue>(quote_type),
-            std::make_shared<PairValue>(this->parse(),
-                                        std::make_shared<NilValue>()));
+            std::make_shared<PairValue>(
+                this->parse(),
+                std::make_shared<NilValue>()));
     } else
         throw SyntaxError("Unimplemented");
 }

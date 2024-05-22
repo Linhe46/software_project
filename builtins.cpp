@@ -8,10 +8,11 @@ std::unordered_map<std::string,ValuePtr>procDict(){
     procs["print"]=printVal;
     return procs;
 }
+
 ValuePtr add(const std::vector<ValuePtr>& params){
     double result=0;
     for(const auto&i:params){
-        if(!i->isSelfEvaluating(ValueType::NUMERIC)){
+        if(!i->isNumber()){
             throw LispError("Cannot add a non-numeric value.");
         }
         result += i->asNumber();

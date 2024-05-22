@@ -2,14 +2,31 @@
 
 #include <iomanip>
 #include <sstream>
-bool Value::isSelfEvaluating(ValueType type) {
-    return this->type == type;
+bool Value::isNil() const{
+    return typeid(*this)==typeid(NilValue);
 }
-std::vector<ValuePtr>Value::toVector(){//非列表抛出异常
-    throw LispError("Not a list");
+bool Value::isPair() const{
+    return typeid(*this)==typeid(PairValue);
+}
+bool Value::isSelfEvaluating() const{
+    return typeid(*this)==typeid(NumericValue)||
+    typeid(*this)==typeid(BooleanValue)||
+    typeid(*this)==typeid(StringValue);
+}
+bool Value::isNumber() const{
+    return typeid(*this)==typeid(NumericValue);
+}
+bool Value::isSymbol() const{
+    return typeid(*this)==typeid(SymbolValue);
+}
+bool Value::isProc() const{
+    return typeid(*this)==typeid(BuiltinProcValue);
+}
+std::vector<ValuePtr>Value::toVector(){//只处理列表
+    throw LispError("Failed in toVector");
 }
 std::optional<std::string> Value::asSymbol() const{//获取符号名
-    if(this->type!=ValueType::SYMBOL)
+    if(typeid(*this)!=typeid(SymbolValue)) 
         return std::nullopt;
     return this->toString();
 }
@@ -55,14 +72,13 @@ std::string PairValue::toString() const{
 }
 
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
-
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);
-    if(pair.first->getType()!=ValueType::NIL)
+    if(typeid(*pair.first)!=typeid(NilValue))
         values.push_back(pair.first);
-    if(pair.second->isSelfEvaluating(ValueType::NIL))
+    if(typeid(*pair.second)==typeid(NilValue))//右半部分为空，递归出口
         return values;
-    else if(pair.second->isSelfEvaluating(ValueType::PAIR))//递归展开右边部分
+    else if(typeid(*pair.second)==typeid(PairValue))//递归展开右半部分
     {
         auto child_vec=pair.second->toVector();
         std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
@@ -70,16 +86,15 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     else values.push_back(pair.second);
     return values;
 }
+ValuePtr PairValue::getRight() const{
+    return std::make_shared<PairValue>(std::make_shared<NilValue>(),this->second);
+}
 std::ostream& operator<<(std::ostream& os, const Value& value){
     return os<<value.toString();
 }
-
 std::string BuiltinProcValue::toString()const{
     return std::string("#<procedure>");
 }
 ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
     return func(params);
-}
-ValuePtr PairValue::getRight()const{
-    return this->second->isSelfEvaluating(ValueType::NIL)?nullptr:this->second;
 }
