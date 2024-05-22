@@ -7,7 +7,7 @@ std::unordered_map<TokenType, std::string> isQuotes{
 
 ValuePtr Parser::parse() {
     auto token = std::move(tokens.front());
-    tokens.pop_front();  // 需要弹出？
+    tokens.pop_front();  // 需要弹出
     if (token->getType() == TokenType::NUMERIC_LITERAL) {
         auto value = static_cast<NumericLiteralToken&>(*token).getValue();
         return std::make_shared<NumericValue>(value);

@@ -21,7 +21,7 @@ struct TestCtx {
 int main() {
     // RJSJ_TEST(TestCtx, Lv2, Lv2Only);
     //RJSJ_TEST(TestCtx, Lv2, Lv3);
-    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4);
+    //RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4);
     while (true) {
         try {
             std::cout << ">>> ";

@@ -62,8 +62,8 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
         values.push_back(pair.first);
     if(pair.second->isSelfEvaluating(ValueType::NIL))
         return values;
-    else if(pair.second->isSelfEvaluating(ValueType::PAIR))
-    {//递归展开右边部分
+    else if(pair.second->isSelfEvaluating(ValueType::PAIR))//递归展开右边部分
+    {
         auto child_vec=pair.second->toVector();
         std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
     }
