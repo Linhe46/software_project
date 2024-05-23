@@ -9,7 +9,6 @@ using namespace std::literals;
 
 std::unordered_map<std::string,ValuePtr>EvalEnv::symbolList;
 EvalEnv::EvalEnv(){//初始化求值器
-    symbolList.clear();
     auto procs=procDict();
     for(auto pair:procs)//加载内置过程
         addToSymbol(pair.first,pair.second);
@@ -35,20 +34,19 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
 ValuePtr EvalEnv::eval(ValuePtr expr) {
     if (expr->isPair()){//PAIR型，即作为列表处理
         auto temp=expr.get();
-        PairValue* expr=static_cast<PairValue*>(std::move(temp));
+        PairValue* expr=static_cast<PairValue*>(temp);
         if(auto name=expr->getCar()->asSymbol()){//实现define name value
             if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())
                 return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
-            else throw LispError("Proc not Defined");
+            //是列表且不是特殊形式
+            else{
+                ValuePtr proc=this->eval(expr->getCar());
+                ValuePtr right=expr->getCdr();
+                std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
+                return this->apply(proc,args);
+            }
         }
-        //是列表且不是特殊形式
-        else{
-            ValuePtr proc=this->eval(expr->getCar());
-            ValuePtr right=expr->getCdr();
-            std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
-            return this->apply(proc,args);
-        }
-        //else throw LispError("Unimplemented");
+        else throw LispError("Unimplemented");
     }
     else if (expr->isSelfEvaluating())//可自求值
         return expr;
@@ -68,5 +66,5 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 }
 
 void EvalEnv::addToSymbol(std::string name,ValuePtr ptr){
-    EvalEnv::symbolList.insert({name,std::move(ptr)});
+    symbolList[name]=ptr;
 }
