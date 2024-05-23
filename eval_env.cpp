@@ -1,15 +1,18 @@
 #include "./eval_env.h"
 #include "./builtins.h"
+#include "./forms.h"
 #include <algorithm>
 #include <iterator>
 #include <ranges>
+#include <iostream>
 using namespace std::literals;
 
-std::unordered_map<std::string,ValuePtr>symbolList;
+std::unordered_map<std::string,ValuePtr>EvalEnv::symbolList;
 EvalEnv::EvalEnv(){//初始化求值器
+    symbolList.clear();
     auto procs=procDict();
     for(auto pair:procs)//加载内置过程
-        symbolList.insert({pair.first,pair.second});
+        addToSymbol(pair.first,pair.second);
 }
 std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     if(!expr) return {};//无剩余变量
@@ -31,21 +34,20 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
     if (expr->isPair()){//PAIR型，即作为列表处理
-        std::vector<ValuePtr>v=expr->toVector();
-        if(v[0]->asSymbol()=="define"s){//实现define name value
-            if(auto name=v[1]->asSymbol()){
-                if(v.size()<3) 
-                    throw LispError("Malformed define.");//错误的定义格式
-                symbolList[name.value()]=eval(v[2]);
-                return std::make_shared<NilValue>();
+        std::cout<<*expr<<'\n';
+        PairValue* expr=dynamic_cast<PairValue*>(expr);
+        std::cout<<*expr<<'\n';
+        std::cout<<"yes0"<<"\n";
+        if(auto name=expr->getCar()->asSymbol()){//实现define name value
+            std::cout<<"yes1"<<'\n';
+            if(symbolList.find(name.value())!=symbolList.end()){std::cout<<"yes2"<<'\n';
+                return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
             }
-            else throw LispError("Malformed define.");//定义错误
         }
         //是列表且不是特殊形式
         else{
-            auto pairVar=static_cast<PairValue&>(*expr);
-            ValuePtr proc=this->eval(std::move(v[0]));
-            ValuePtr right=pairVar.getRight();
+            ValuePtr proc=this->eval(expr->getCar());
+            ValuePtr right=expr->getCdr();
             std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
             return this->apply(proc,args);
         }
@@ -66,4 +68,8 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     else
         throw LispError("Unimplemented");
     return std::make_shared<NilValue>();
+}
+
+void EvalEnv::addToSymbol(std::string name,ValuePtr ptr){
+    EvalEnv::symbolList.insert({name,std::move(ptr)});
 }

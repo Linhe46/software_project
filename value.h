@@ -65,7 +65,8 @@ class PairValue:public Value{
         PairValue(ValuePtr p1,ValuePtr p2):first(std::move(p1)),second(std::move(p2)){} 
         std::string toString() const override;
         std::vector<ValuePtr>toVector()override;
-        ValuePtr getRight() const;
+        ValuePtr getCdr() const;
+        ValuePtr getCar() const;
 };
 
 using BuiltinFuncType=ValuePtr(const std::vector<ValuePtr>&);

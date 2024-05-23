@@ -86,8 +86,11 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     else values.push_back(pair.second);
     return values;
 }
-ValuePtr PairValue::getRight() const{
+ValuePtr PairValue::getCdr() const{
     return std::make_shared<PairValue>(std::make_shared<NilValue>(),this->second);
+}
+ValuePtr PairValue::getCar() const{
+    return this->first;
 }
 std::ostream& operator<<(std::ostream& os, const Value& value){
     return os<<value.toString();
