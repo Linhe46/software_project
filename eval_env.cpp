@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iterator>
 #include <ranges>
-#include <iostream>
+
 using namespace std::literals;
 
 std::unordered_map<std::string,ValuePtr>EvalEnv::symbolList;
@@ -34,15 +34,12 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
     if (expr->isPair()){//PAIR型，即作为列表处理
-        std::cout<<*expr<<'\n';
-        PairValue* expr=dynamic_cast<PairValue*>(expr);
-        std::cout<<*expr<<'\n';
-        std::cout<<"yes0"<<"\n";
+        auto temp=expr.get();
+        PairValue* expr=static_cast<PairValue*>(std::move(temp));
         if(auto name=expr->getCar()->asSymbol()){//实现define name value
-            std::cout<<"yes1"<<'\n';
-            if(symbolList.find(name.value())!=symbolList.end()){std::cout<<"yes2"<<'\n';
+            if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())
                 return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
-            }
+            else throw LispError("Proc not Defined");
         }
         //是列表且不是特殊形式
         else{
