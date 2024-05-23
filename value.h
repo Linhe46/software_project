@@ -30,6 +30,7 @@ class BooleanValue:public Value{
     public:
         BooleanValue(bool value):value{value}{}
         std::string toString() const override;
+        std::vector<ValuePtr>toVector() override;
 };
 class NumericValue:public Value{
     private:
@@ -38,6 +39,7 @@ class NumericValue:public Value{
         NumericValue(double value):value{value} {}
         std::string toString() const override;
         double asNumber()const override;
+        std::vector<ValuePtr>toVector() override;
 };
 class StringValue:public Value{
     private:
@@ -45,11 +47,13 @@ class StringValue:public Value{
     public:
         StringValue(const std::string& value):value{value}{}
         std::string toString() const override;
+        std::vector<ValuePtr>toVector() override;
 };
 class NilValue:public Value{
     public:
         NilValue(){}
         std::string toString() const override;
+        std::vector<ValuePtr>toVector() override;
 };
 class SymbolValue:public Value{
     private:
@@ -57,12 +61,14 @@ class SymbolValue:public Value{
     public:
         SymbolValue(const std::string& name):name{name}{}
         std::string toString() const override;
+        std::vector<ValuePtr>toVector() override;
 };
 class PairValue:public Value{
     private:
-        ValuePtr first,second;//破坏封装性？
+        ValuePtr first,second;
     public:
         PairValue(ValuePtr p1,ValuePtr p2):first(std::move(p1)),second(std::move(p2)){} 
+        PairValue(const std::vector<ValuePtr>& arg,int pos=0);
         std::string toString() const override;
         std::vector<ValuePtr>toVector()override;
         ValuePtr getCdr() const;
@@ -77,6 +83,15 @@ class BuiltinProcValue:public Value{
         BuiltinProcValue(BuiltinFuncType* func_):func(func_){}
         std::string toString() const override;
         ValuePtr operator()(const std::vector<ValuePtr>&params);
+};
+
+class LambdaValue:public Value{
+    private:
+        std::vector<std::string> params;
+        std::vector<ValuePtr> body;
+    public:
+        LambdaValue(const std::vector<std::string>&,const std::vector<ValuePtr>&);
+        std::string toString() const override;
 };
 
 std::ostream& operator<<(std::ostream& os ,const Value& value);

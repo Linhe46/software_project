@@ -35,7 +35,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     if (expr->isPair()){//PAIR型，即作为列表处理
         auto temp=expr.get();
         PairValue* expr=static_cast<PairValue*>(temp);
-        if(auto name=expr->getCar()->asSymbol()){//实现define name value
+        if(auto name=expr->getCar()->asSymbol()){
             if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())
                 return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
             //是列表且不是特殊形式

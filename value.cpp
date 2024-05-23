@@ -23,7 +23,7 @@ bool Value::isProc() const{
     return typeid(*this)==typeid(BuiltinProcValue);
 }
 std::vector<ValuePtr>Value::toVector(){//只处理列表
-    throw LispError("Failed in toVector");
+    throw LispError("Converted to vector failed");
 }
 std::optional<std::string> Value::asSymbol() const{//获取符号名
     if(typeid(*this)!=typeid(SymbolValue)) 
@@ -70,7 +70,30 @@ std::string PairValue::toString() const{
         return "("+first->toString()+")";
     return "("+first->toString()+" . "+second->toString()+")";//右半部分不再是列表，点分隔，右括号闭合
 }
-
+PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),second(nullptr){//vector转换到Pair型
+    if(args.size()<=0)
+        throw("Vector to Pair Failed");
+    first=args[pos];
+    if(pos==args.size()-1)
+        second=std::make_shared<NilValue>();
+    else
+        second=std::make_shared<PairValue>(args,++pos);
+}
+std::vector<ValuePtr>NilValue::toVector(){
+    return {};
+}
+std::vector<ValuePtr>NumericValue::toVector(){
+    return {std::make_shared<NumericValue>(value)};
+}
+std::vector<ValuePtr>BooleanValue::toVector(){
+    return {std::make_shared<BooleanValue>(value)};
+}
+std::vector<ValuePtr>SymbolValue::toVector(){
+    return {std::make_shared<SymbolValue>(name)};
+}
+std::vector<ValuePtr>StringValue::toVector(){
+    return {std::make_shared<StringValue>(value)};
+}
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);
@@ -87,17 +110,26 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     return values;
 }
 ValuePtr PairValue::getCdr() const{
-    return std::make_shared<PairValue>(std::make_shared<NilValue>(),this->second);
+    //return std::make_shared<PairValue>(std::make_shared<NilValue>(),this->second);
+    return second;
 }
 ValuePtr PairValue::getCar() const{
     return this->first;
 }
-std::ostream& operator<<(std::ostream& os, const Value& value){
-    return os<<value.toString();
-}
 std::string BuiltinProcValue::toString()const{
-    return std::string("#<procedure>");
+    return "#<procedure>";
 }
 ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
     return func(params);
+}
+
+LambdaValue::LambdaValue(const std::vector<std::string>& params_,const std::vector<ValuePtr>& body_):
+params(params_),body(body_){}
+
+std::string LambdaValue::toString() const{
+    return "#<procedure>";
+}
+
+std::ostream& operator<<(std::ostream& os, const Value& value){
+    return os<<value.toString();
 }
