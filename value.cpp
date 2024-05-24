@@ -22,6 +22,9 @@ bool Value::isSymbol() const{
 bool Value::isProc() const{
     return typeid(*this)==typeid(BuiltinProcValue);
 }
+bool Value::isLambda() const{
+    return typeid(*this)==typeid(LambdaValue);
+}
 std::vector<ValuePtr>Value::toVector(){//只处理列表
     throw LispError("Converted to vector failed");
 }
@@ -79,8 +82,8 @@ PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),
     else
         second=std::make_shared<PairValue>(args,++pos);
 }
-std::vector<ValuePtr>NilValue::toVector(){
-    return {std::make_shared<NilValue>()};
+std::vector<ValuePtr>NilValue::toVector(){//单独转换空表，一定在末尾，可忽略
+    return {};
 }
 std::vector<ValuePtr>NumericValue::toVector(){
     return {std::make_shared<NumericValue>(value)};
@@ -98,7 +101,7 @@ std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);
     //if(typeid(*pair.first)!=typeid(NilValue))
-        values.push_back(pair.first);
+    values.push_back(pair.first);
     if(typeid(*pair.second)==typeid(NilValue))//右半部分为空，递归出口
         return values;
     else if(typeid(*pair.second)==typeid(PairValue))//递归展开右半部分
@@ -123,8 +126,8 @@ ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
     return func(params);
 }
 
-LambdaValue::LambdaValue(const std::vector<std::string>& params_,const std::vector<ValuePtr>& body_):
-params(params_),body(body_){}
+LambdaValue::LambdaValue(const std::vector<std::string>& params_,const std::vector<ValuePtr>& body_,EvalEnvPtr env_):
+params(params_),body(body_),env(env_){}
 
 std::string LambdaValue::toString() const{
     return "#<procedure>";

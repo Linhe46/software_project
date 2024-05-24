@@ -16,15 +16,23 @@ std::unordered_map<std::string,ValuePtr>procDict(){
     procs[">"]=biggerVal;
     return procs;
 }
-ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init){
-    
-    double result=init;
-    for(const auto&i:params){
-        if(!i->isNumber())
-            throw LispError("Cannot calculate a non-numeric value.");
-        result=func(result,i->asNumber());
+ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init,int least_params){
+    if(params.size()<least_params)
+        throw LispError("At least "+ std::to_string(least_params)+ " param required");
+    else{
+        double res=0;
+        for(int i=0;i<params.size();i++){
+            if(!params[i]->isNumber())
+                throw("Cannot calculate a non-numeric value");
+            if(i==0){
+                auto head=params[i]->asNumber();
+                res=(params.size()==1?(func(init,head)):head);
+            }
+            else
+                res=func(res,params[i]->asNumber());
+        }
+        return std::make_shared<NumericValue>(res);    
     }
-    return std::make_shared<NumericValue>(result);
 };
 ValuePtr numericCompare(const std::vector<ValuePtr>& params, numericCompareType func){
     if(params.size()==0)
@@ -44,19 +52,19 @@ ValuePtr numericCompare(const std::vector<ValuePtr>& params, numericCompareType 
     return std::make_shared<BooleanValue>(true);
 }
 ValuePtr add(const std::vector<ValuePtr>& params){
-    return arithmetic(params,[](double a,double b){return a+b;},0);
+    return arithmetic(params,[](double a,double b){return a+b;},0,0);
 }
 ValuePtr sub(const std::vector<ValuePtr>& params){
-    return arithmetic(params,[](double a,double b){return a-b;},0);
+    return arithmetic(params,[](double a,double b){return a-b;},0,1);
 }
 ValuePtr mult(const std::vector<ValuePtr>& params){
-    return arithmetic(params,[](double a,double b){return a*b;},1);
+    return arithmetic(params,[](double a,double b){return a*b;},1,0);
 }
 ValuePtr divi(const std::vector<ValuePtr>& params){//默认参数问题
     return arithmetic(params,[](double a,double b){
         if(b==0)
             throw LispError("Divided by Zero!");
-        return a/b;},1);
+        return a/b;},1,1);
 }
 ValuePtr bigger(const std::vector<ValuePtr>& params){
     return numericCompare(params,[](double a,double b){return a>b;});

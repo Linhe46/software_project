@@ -7,6 +7,9 @@
 #include <optional>
 #include "./error.h"
 
+class EvalEnv;
+using EvalEnvPtr=std::shared_ptr<EvalEnv>;
+
 class Value;
 using ValuePtr = std::shared_ptr<Value>;
 
@@ -19,6 +22,7 @@ class Value{
         bool isNumber() const;
         bool isSymbol() const;
         bool isProc() const;
+        bool isLambda() const;
         virtual std::vector<ValuePtr>toVector();
         std::optional<std::string> asSymbol() const;
         virtual double asNumber() const;
@@ -89,8 +93,10 @@ class LambdaValue:public Value{
     private:
         std::vector<std::string> params;
         std::vector<ValuePtr> body;
+        EvalEnvPtr env;
     public:
-        LambdaValue(const std::vector<std::string>&,const std::vector<ValuePtr>&);
+        LambdaValue(const std::vector<std::string>&,const std::vector<ValuePtr>&,EvalEnvPtr env);
+        ValuePtr apply(const std::vector<ValuePtr>& args);
         std::string toString() const override;
 };
 

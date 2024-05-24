@@ -7,12 +7,14 @@
 
 using namespace std::literals;
 
-std::unordered_map<std::string,ValuePtr>EvalEnv::symbolList;
-EvalEnv::EvalEnv(){//初始化求值器
+EvalEnv::EvalEnv():parent{nullptr}{//初始化求值器
     auto procs=procDict();
     for(auto pair:procs)//加载内置过程
-        addToSymbol(pair.first,pair.second);
+        defineBinding(pair.first,pair.second);
 }
+EvalEnv::EvalEnv(const std::shared_ptr<EvalEnv>&parent,const std::unordered_map<std::string,ValuePtr>&inner_params):
+parent(parent),symbolList(inner_params){}
+
 std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     if(!expr) return {};//无剩余变量
     std::vector<ValuePtr> result;
@@ -22,12 +24,16 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     return result;
 }
 ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
-    if(proc->isProc()){
+    if(proc->isLambda()){//lambda表达式
+        auto lambda=static_cast<LambdaValue&>(*proc);
+        return lambda.apply(args);
+    }
+    else if(proc->isProc()){//内置过程
         auto procVar=static_cast<BuiltinProcValue&>(*proc);
         return procVar(args);
     }
     else{
-        throw LispError("Unimplemented");
+        throw LispError("Unimplemented in apply");
     }
 }
 
@@ -35,36 +41,59 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     if (expr->isPair()){//PAIR型，即作为列表处理
         auto temp=expr.get();
         PairValue* expr=static_cast<PairValue*>(temp);
-        if(auto name=expr->getCar()->asSymbol()){
+        //特殊式
+        if(auto name=expr->getCar()->asSymbol())
             if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())
                 return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
-            //是列表且不是特殊形式
-            else{
-                ValuePtr proc=this->eval(expr->getCar());
-                ValuePtr right=expr->getCdr();
-                std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
-                return this->apply(proc,args);
-            }
-        }
-        else throw LispError("Unimplemented");
+        //过程式
+        ValuePtr proc=this->eval(expr->getCar());
+        ValuePtr right=expr->getCdr();
+        std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
+        return this->apply(proc,args);
     }
     else if (expr->isSelfEvaluating())//可自求值
         return expr;
-    else if(expr->isSymbol()){
-        if(auto name=expr->asSymbol()){
-            auto it=symbolList.find(name.value());
-            if(it!=symbolList.end())
-                return it->second;
-            else throw LispError("Variable "+name.value()+" not defined.");
-        }
-    }
+    else if(auto name=expr->asSymbol())
+        return this->lookupBinding(name.value());
     else if (expr->isNil())//禁止对空表求值
         throw LispError("Evaluating nil is prohibited.");
     else
-        throw LispError("Unimplemented");
+        throw LispError("Unimplemented in eval");
     return std::make_shared<NilValue>();
 }
 
-void EvalEnv::addToSymbol(std::string name,ValuePtr ptr){
+void EvalEnv::defineBinding(std::string name,ValuePtr ptr){
     symbolList[name]=ptr;
 }
+
+ValuePtr EvalEnv::lookupBinding(std::string name){
+    auto it=symbolList.find(name);
+    if(it!=symbolList.end())
+        return it->second;
+    else if(parent)//向上级环境查找
+        return parent->lookupBinding(std::move(name));
+    else
+        throw LispError("Variable "+name+" not defined.");
+}
+EvalEnvPtr EvalEnv::createGlobal(){
+    return EvalEnvPtr(new EvalEnv());
+}
+
+EvalEnvPtr EvalEnv::createChild(const std::vector<std::string>&params,
+const std::vector<ValuePtr>& args){
+    std::unordered_map<std::string,ValuePtr>list;
+    if(params.size()!=args.size())
+        throw LispError("params and args not match");
+    for(int i=0;i<params.size();i++)
+        list.insert({params[i],args[i]});
+    return EvalEnvPtr(new EvalEnv(this->shared_from_this(),std::move(list)));
+}
+
+ValuePtr LambdaValue::apply(const std::vector<ValuePtr>& args){
+    auto cur_env=env->createChild(params,args);
+    ValuePtr res=nullptr;
+    for(const auto&proc:body)
+        res=cur_env->eval(proc);
+    return res;
+}
+

@@ -1,6 +1,6 @@
 #include "./forms.h"
 #include <optional>
-#include <iostream>
+//#include <iostream>
 const std::unordered_map<std::string, SpecialFormType*> SPECIAL_FORMS{
     {"define",defineForm},
     {"quote",quoteForm},
@@ -15,7 +15,7 @@ ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
             throw LispError("Malformed Define");
         auto first=name.value();
         auto second=env.eval(args[1]);
-        env.addToSymbol(std::move(first),std::move(second));
+        env.defineBinding(std::move(first),std::move(second));
     }
     else if(args[0]->isPair()){//转换为lambda
         if(args.size()<2)
@@ -51,7 +51,7 @@ ValuePtr quoteForm(const std::vector<ValuePtr>&args, EvalEnv& env){
 }
 ValuePtr conditionForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()<2)
-        throw LispError("Unimplemented");
+        throw LispError("Less than two clause");
     if(env.eval(args[0])->toString()=="#f"){
         try{
             return env.eval(args.at(2));
@@ -96,5 +96,5 @@ ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     auto body=PairValue(args).getCdr()->toVector();//右半部分为过程表达式
     //for(auto pt:body)
      //std::cout<<*pt<<'\n';
-    return std::make_shared<LambdaValue>(params,body);
+    return std::make_shared<LambdaValue>(params,body,env.shared_from_this());
 }
