@@ -14,7 +14,6 @@ ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
         if(args.size()<2)
             throw LispError("Malformed Define");
         auto first=name.value();
-        std::cout<<args[1]->toString()<<"\n";
         auto second=env.eval(args[1]);
         env.addToSymbol(std::move(first),std::move(second));
     }
@@ -26,14 +25,15 @@ ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
             ValuePtr proc_params=static_cast<PairValue&>(*args[0]).getCdr();//形参列表
             ValuePtr proc_body=std::make_shared<PairValue>(args,1);//表达式列表
             auto lambda_args=std::make_shared<PairValue>(std::move(proc_params),std::move(proc_body));
-            std::cout<<lambda_args->toString()<<"\n";
+            //std::cout<<*lambda_args<<'\n';
             auto lambda_arg=std::make_shared<PairValue>(std::make_shared<SymbolValue>("lambda"),std::move(lambda_args));
+            //std::cout<<*lambda_arg<<'\n';
             auto lambda=std::make_shared<PairValue>(std::move(lambda_arg),std::make_shared<NilValue>());//包装为表达式
-            std::cout<<lambda->toString()<<"\n";
+            //std::cout<<*lambda<<"\n";
             auto proc=std::make_shared<PairValue>(std::make_shared<SymbolValue>(name.value()),std::move(lambda));
-            std::cout<<proc->toString()<<"\n";
+            //std::cout<<*proc<<"\n";
             auto lambda_form_define=std::make_shared<PairValue>(std::make_shared<SymbolValue>("define"),std::move(proc));
-            std::cout<<lambda_form_define->toString()<<"\n";
+            //std::cout<<*lambda_form_define<<"\n";
             env.eval(lambda_form_define);//形如(define f (lambda (x..) y...))
     }   }
     else{
@@ -86,12 +86,15 @@ ValuePtr orForm(const std::vector<ValuePtr>& args, EvalEnv& env){
 ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     auto param_list=args[0]->toVector();//形参表
     std::vector<std::string>params;
-    for(const auto x:param_list){
-        if(auto name=x->asSymbol())
-            params.push_back(name.value());
-        else throw LispError("Non identifier in lambda params");
-    }
+    if(!(param_list.size()==1&&param_list[0]->isNil()))//判断形参是否为空     
+        for(const auto x:param_list){
+            if(auto name=x->asSymbol())
+                params.push_back(name.value());
+            else throw LispError("Non-identifier in lambda params");
+        }
     //检查是否均为符号？
     auto body=PairValue(args).getCdr()->toVector();//右半部分为过程表达式
+    //for(auto pt:body)
+     //std::cout<<*pt<<'\n';
     return std::make_shared<LambdaValue>(params,body);
 }

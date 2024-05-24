@@ -80,7 +80,7 @@ PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),
         second=std::make_shared<PairValue>(args,++pos);
 }
 std::vector<ValuePtr>NilValue::toVector(){
-    return {};
+    return {std::make_shared<NilValue>()};
 }
 std::vector<ValuePtr>NumericValue::toVector(){
     return {std::make_shared<NumericValue>(value)};
@@ -97,7 +97,7 @@ std::vector<ValuePtr>StringValue::toVector(){
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);
-    if(typeid(*pair.first)!=typeid(NilValue))
+    //if(typeid(*pair.first)!=typeid(NilValue))
         values.push_back(pair.first);
     if(typeid(*pair.second)==typeid(NilValue))//右半部分为空，递归出口
         return values;

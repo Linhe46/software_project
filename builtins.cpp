@@ -17,6 +17,7 @@ std::unordered_map<std::string,ValuePtr>procDict(){
     return procs;
 }
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init){
+    
     double result=init;
     for(const auto&i:params){
         if(!i->isNumber())
@@ -51,7 +52,7 @@ ValuePtr sub(const std::vector<ValuePtr>& params){
 ValuePtr mult(const std::vector<ValuePtr>& params){
     return arithmetic(params,[](double a,double b){return a*b;},1);
 }
-ValuePtr divi(const std::vector<ValuePtr>& params){
+ValuePtr divi(const std::vector<ValuePtr>& params){//默认参数问题
     return arithmetic(params,[](double a,double b){
         if(b==0)
             throw LispError("Divided by Zero!");
