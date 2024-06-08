@@ -137,8 +137,8 @@ ValuePtr PairValue::getCar() const{
 std::string BuiltinProcValue::toString()const{
     return "#<procedure>";
 }
-ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params){
-    return func(params);
+ValuePtr BuiltinProcValue::operator()(const std::vector<ValuePtr>&params, EvalEnv& env){
+    return func(params,env);
 }
 
 LambdaValue::LambdaValue(const std::vector<std::string>& params_,const std::vector<ValuePtr>& body_,EvalEnvPtr env_):

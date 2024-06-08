@@ -18,7 +18,7 @@ private:
     EvalEnv(const std::shared_ptr<EvalEnv>&parent,const std::unordered_map<std::string,ValuePtr>&inner_params);//由参数表创建环境
 public:
     ValuePtr eval(ValuePtr expr);
-    static ValuePtr apply(ValuePtr proc,std::vector<ValuePtr>args);
+    static ValuePtr apply(ValuePtr proc,std::vector<ValuePtr>args,EvalEnv& env);
     ValuePtr lookupBinding(std::string name);
     void defineBinding(std::string,ValuePtr);
     static EvalEnvPtr createGlobal();

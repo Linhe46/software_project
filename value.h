@@ -82,14 +82,15 @@ class PairValue:public Value{
         ValuePtr getCar() const;
 };
 
-using BuiltinFuncType=ValuePtr(const std::vector<ValuePtr>&);
+//using BuiltinFuncType=ValuePtr(const std::vector<ValuePtr>&);
+using BuiltinFuncType=ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
 class BuiltinProcValue:public Value{
     private:
         BuiltinFuncType* func=nullptr;
     public:
         BuiltinProcValue(BuiltinFuncType* func_):func(func_){}
         std::string toString() const override;
-        ValuePtr operator()(const std::vector<ValuePtr>&params);
+        ValuePtr operator()(const std::vector<ValuePtr>&params, EvalEnv& env);
 };
 
 class LambdaValue:public Value{

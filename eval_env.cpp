@@ -23,14 +23,14 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
                            [this](ValuePtr v) { return this->eval(v); });
     return result;
 }
-ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
+ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args,EvalEnv& env){
     if(proc->isLambda()){//lambda表达式
         auto lambda=static_cast<LambdaValue&>(*proc);
         return lambda.apply(args);
     }
     else if(proc->isProc()){//内置过程
         auto procVar=static_cast<BuiltinProcValue&>(*proc);
-        return procVar(args);
+        return procVar(args, env);
     }
     else{
         throw LispError("Unimplemented in apply");
@@ -50,7 +50,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         ValuePtr proc=this->eval(expr->getCar());//求解过程
         ValuePtr right=expr->getCdr();
         std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量作为过程的参数
-        return this->apply(proc,args);
+        return this->apply(proc,args,*this);
     }
     //可自求值
     else if (expr->isSelfEvaluating())

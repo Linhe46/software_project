@@ -151,22 +151,22 @@ ValuePtr typeCheck(const std::vector<ValuePtr>& params, typeCheckType func, cons
 }
 
 
-ValuePtr add(const std::vector<ValuePtr>& params){
+ValuePtr add(const std::vector<ValuePtr>& params,EvalEnv& env){
     return arithmetic(params,[](double a,double b){return a+b;},0,0);
 }
-ValuePtr sub(const std::vector<ValuePtr>& params){
+ValuePtr sub(const std::vector<ValuePtr>& params,EvalEnv& env){
     return arithmetic(params,[](double a,double b){return a-b;},0,1);
 }
-ValuePtr mult(const std::vector<ValuePtr>& params){
+ValuePtr mult(const std::vector<ValuePtr>& params,EvalEnv& env){
     return arithmetic(params,[](double a,double b){return a*b;},1,0);
 }
-ValuePtr divi(const std::vector<ValuePtr>& params){//默认参数问题
+ValuePtr divi(const std::vector<ValuePtr>& params,EvalEnv& env){//默认参数问题
     return arithmetic(params,[](double a,double b){
         if(b==0)
             throw LispError("Divided by Zero!");
         return a/b;},1,1);
 }
-ValuePtr abs_(const std::vector<ValuePtr>& params){
+ValuePtr abs_(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("abs: arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber())
@@ -174,7 +174,7 @@ ValuePtr abs_(const std::vector<ValuePtr>& params){
     else 
         return std::make_shared<NumericValue>(std::abs(params[0]->asNumber()));
 }
-ValuePtr expt(const std::vector<ValuePtr>& params){
+ValuePtr expt(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("expt: arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
@@ -187,7 +187,7 @@ ValuePtr expt(const std::vector<ValuePtr>& params){
             return std::make_shared<NumericValue>(std::pow(x,y));
         }
 }
-ValuePtr quotient(const std::vector<ValuePtr>& params){
+ValuePtr quotient(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("quotient: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
@@ -201,7 +201,7 @@ ValuePtr quotient(const std::vector<ValuePtr>& params){
             return std::make_shared<NumericValue>(res>0 ? std::floor(res) : std::ceil(res));
         }
 }
-ValuePtr modulo(const std::vector<ValuePtr>& params){
+ValuePtr modulo(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("modulo: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
@@ -220,7 +220,7 @@ ValuePtr modulo(const std::vector<ValuePtr>& params){
             return std::make_shared<NumericValue>(x);
         }
 }
-ValuePtr remainder_(const std::vector<ValuePtr>& params){
+ValuePtr remainder_(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("remainder: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
@@ -234,7 +234,7 @@ ValuePtr remainder_(const std::vector<ValuePtr>& params){
         }
 }
 
-ValuePtr eq(const std::vector<ValuePtr>& params){
+ValuePtr eq(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("eq?: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else{
@@ -254,7 +254,7 @@ ValuePtr eq(const std::vector<ValuePtr>& params){
             return std::make_shared<BooleanValue>(false);
     }
 }
-ValuePtr equal(const std::vector<ValuePtr>& params){
+ValuePtr equal(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("eq?: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else{
@@ -264,28 +264,28 @@ ValuePtr equal(const std::vector<ValuePtr>& params){
         else return std::make_shared<BooleanValue>(false);
     }
 }
-ValuePtr negation(const std::vector<ValuePtr>& params){
+ValuePtr negation(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("not: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     auto arg=params[0];
     return std::make_shared<BooleanValue>(arg->toString()=="#f" ? true : false);
 }
-ValuePtr less(const std::vector<ValuePtr>& params){
+ValuePtr less(const std::vector<ValuePtr>& params,EvalEnv& env){
     return numericCompare(params,[](double a,double b){return a<b;});
 }
-ValuePtr less_equal(const std::vector<ValuePtr>& params){
+ValuePtr less_equal(const std::vector<ValuePtr>& params,EvalEnv& env){
     return numericCompare(params,[](double a,double b){return a<=b;});
 }
-ValuePtr greater_equal(const std::vector<ValuePtr>& params){
+ValuePtr greater_equal(const std::vector<ValuePtr>& params,EvalEnv& env){
     return numericCompare(params,[](double a,double b){return a>=b;});
 }
-ValuePtr greater(const std::vector<ValuePtr>& params){
+ValuePtr greater(const std::vector<ValuePtr>& params,EvalEnv& env){
     return numericCompare(params,[](double a,double b){return a>b;});
 }
-ValuePtr numeric_equal(const std::vector<ValuePtr>& params){
+ValuePtr numeric_equal(const std::vector<ValuePtr>& params,EvalEnv& env){
     return numericCompare(params,[](double a,double b){return a==b;});
 }
-ValuePtr even(const std::vector<ValuePtr>& params){
+ValuePtr even(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("even?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     else{
@@ -300,7 +300,7 @@ ValuePtr even(const std::vector<ValuePtr>& params){
             throw LispError("even?: Cannot apply to non-integars");
     }
 }
-ValuePtr odd(const std::vector<ValuePtr>& params){
+ValuePtr odd(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("odd?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     else{
@@ -315,7 +315,7 @@ ValuePtr odd(const std::vector<ValuePtr>& params){
             throw LispError("odd?: Cannot apply to non-integars");
     }
 }
-ValuePtr zero(const std::vector<ValuePtr>& params){
+ValuePtr zero(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("zero?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     else{
@@ -329,47 +329,47 @@ ValuePtr zero(const std::vector<ValuePtr>& params){
     }
 }
 
-ValuePtr is_atom(const std::vector<ValuePtr>& params){
+ValuePtr is_atom(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isSelfEvaluating()||arg->isSymbol()||arg->isNil();}, "atom?");
 }
-ValuePtr is_boolean(const std::vector<ValuePtr>& params){
+ValuePtr is_boolean(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isBoolean();}, "boolean?");
 }
-ValuePtr is_integer(const std::vector<ValuePtr>& params){
+ValuePtr is_integer(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isNumber()&&arg->asNumber()==std::trunc(arg->asNumber());}, "integer?");
 }
-ValuePtr is_list(const std::vector<ValuePtr>& params){
+ValuePtr is_list(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isList();}, "list?");
 }
-ValuePtr is_number(const std::vector<ValuePtr>& params){
+ValuePtr is_number(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isNumber();}, "number?");
 }
-ValuePtr is_null(const std::vector<ValuePtr>& params){
+ValuePtr is_null(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isNil();}, "null?");
 }
-ValuePtr is_pair(const std::vector<ValuePtr>& params){
+ValuePtr is_pair(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isPair();}, "pair?");
 }
-ValuePtr is_procedure(const std::vector<ValuePtr>& params){
+ValuePtr is_procedure(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isProc()||arg->isLambda();}, "procedure?");
 }
-ValuePtr is_string(const std::vector<ValuePtr>& params){
+ValuePtr is_string(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isString();}, "string?");
 }
-ValuePtr is_symbol(const std::vector<ValuePtr>& params){
+ValuePtr is_symbol(const std::vector<ValuePtr>& params,EvalEnv& env){
     return typeCheck(params, [](ValuePtr arg){return arg->isSymbol();}, "symbol?");
 }
 
-ValuePtr apply(const std::vector<ValuePtr>& params){
+ValuePtr apply(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("apply: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
     auto list=params[1];
     if((!proc->isProc()&&!proc->isLambda())||!list->isList())
         throw LispError("apply: Contract violation:\n expected: (apply <proc> <list>)");
-    return EvalEnv::apply(proc, list->toVector());
+    return EvalEnv::apply(proc, list->toVector(), env);
 }
-ValuePtr display(const std::vector<ValuePtr>& params){
+ValuePtr display(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("display: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     auto arg=params[0];
@@ -384,15 +384,15 @@ ValuePtr display(const std::vector<ValuePtr>& params){
     std::cout<<ss;
     return std::make_shared<NilValue>();
 }
-ValuePtr displayln(const std::vector<ValuePtr>& params){
+ValuePtr displayln(const std::vector<ValuePtr>& params,EvalEnv& env){
     try{
-        display(params);}
+        display(params,env);}
     catch (LispError& e){
         throw LispError("displayln: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     }
-    return newline(params);
+    return newline(params,env);
 }
-ValuePtr error(const std::vector<ValuePtr>& params){
+ValuePtr error(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)
         throw LispError("");
     else if(params.size()==1)
@@ -400,17 +400,17 @@ ValuePtr error(const std::vector<ValuePtr>& params){
     else
          throw LispError("error: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
 }
-ValuePtr eval(const std::vector<ValuePtr>& params ){
+ValuePtr eval(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("eval: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
-    return 
+    return env.eval(params[0]);
 }
-ValuePtr exit(const std::vector<ValuePtr>& params){
+ValuePtr exit(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0||params.size()==1){
         int code=0;
         if(params.size()==1){
             try{
-                if(is_integer(params))
+                if(is_integer(params,env))
                     code=params[0]->asNumber();
             }
             catch (std::runtime_error&e){
@@ -422,13 +422,13 @@ ValuePtr exit(const std::vector<ValuePtr>& params){
     else
         throw LispError("exit: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
 }
-ValuePtr newline(const std::vector<ValuePtr>& params){
+ValuePtr newline(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=0)
         throw LispError("newline: Arguments mismatch:\n expected:0\n given: "+std::to_string(params.size()));
     std::cout<<'\n';
     return std::make_shared<NilValue>();
 }
-ValuePtr print(const std::vector<ValuePtr>& params){
+ValuePtr print(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)
         throw LispError("newline: Arguments mismatch:\n expected:at least 1\n given: 0");
     for(auto& i:params)
@@ -437,7 +437,7 @@ ValuePtr print(const std::vector<ValuePtr>& params){
     return std::make_shared<NilValue>();
 }
 
-ValuePtr append(const std::vector<ValuePtr>& params){
+ValuePtr append(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)
         return std::make_shared<NilValue>();
     std::vector<ValuePtr>elems;
@@ -449,7 +449,7 @@ ValuePtr append(const std::vector<ValuePtr>& params){
     }
     return std::make_shared<PairValue>(elems);
 }
-ValuePtr car(const std::vector<ValuePtr>& params){
+ValuePtr car(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("car: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     auto arg=params[0];
@@ -457,7 +457,7 @@ ValuePtr car(const std::vector<ValuePtr>& params){
             throw LispError("car: Contract violation:\n expected: (car <pair>)\n given: "+arg->toString());
     return static_cast<PairValue&>(*arg).getCar();
 }
-ValuePtr cdr(const std::vector<ValuePtr>& params){
+ValuePtr cdr(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("cdr: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     auto arg=params[0];
@@ -465,12 +465,12 @@ ValuePtr cdr(const std::vector<ValuePtr>& params){
             throw LispError("cdr: Contract violation:\n expected: (cdr <pair>)\n given: "+arg->toString());
     return static_cast<PairValue&>(*arg).getCdr();
 }
-ValuePtr cons(const std::vector<ValuePtr>& params){
+ValuePtr cons(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("cons: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     return std::make_shared<PairValue>(params[0],params[1]);
 }
-ValuePtr length(const std::vector<ValuePtr>& params){
+ValuePtr length(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
         throw LispError("length: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     auto arg=params[0];
@@ -478,12 +478,12 @@ ValuePtr length(const std::vector<ValuePtr>& params){
             throw LispError("length: Contract violation:\n expected: (length <list>)\n given: "+arg->toString());
     return std::make_shared<NumericValue>(arg->toVector().size());
 }
-ValuePtr list(const std::vector<ValuePtr>& params){
+ValuePtr list(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)
         return std::make_shared<NilValue>();
     return std::make_shared<PairValue>(params);
 }
-ValuePtr map(const std::vector<ValuePtr>& params){
+ValuePtr map(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("map: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
@@ -498,10 +498,10 @@ ValuePtr map(const std::vector<ValuePtr>& params){
     std::vector<ValuePtr>new_elems{};
     std::transform(elems.begin(), elems.end(), std::back_inserter(new_elems),
      [&](ValuePtr e){
-        return EvalEnv::apply(proc,{e});});
+        return EvalEnv::apply(proc,{e},env);});
     return std::make_shared<PairValue>(new_elems);
 }
-ValuePtr filter(const std::vector<ValuePtr>& params){
+ValuePtr filter(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("filter: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
@@ -516,14 +516,14 @@ ValuePtr filter(const std::vector<ValuePtr>& params){
     std::vector<ValuePtr>new_elems{};
     try{
     std::copy_if(elems.begin(), elems.end(), std::back_inserter(new_elems),
-     [&](ValuePtr e){auto res= EvalEnv::apply(proc,{e});
+     [&](ValuePtr e){auto res= EvalEnv::apply(proc,{e},env);
                     return res->isBoolean()&&res->toString()=="#f" ? false : true;});}
     catch(LispError& e){
         throw LispError("filter: Contract violation:\n expected: <proc> should accept one parameter\n given: "+proc->toString());
     }
     return std::make_shared<PairValue>(new_elems);
 }
-ValuePtr reduce(const std::vector<ValuePtr>& params){
+ValuePtr reduce(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("reduce: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
@@ -542,7 +542,7 @@ ValuePtr reduce(const std::vector<ValuePtr>& params){
             try{
             return std::accumulate(elems.begin()+1,elems.end(),elems[0],
             [&](ValuePtr e1, ValuePtr e2){
-                auto res=EvalEnv::apply(proc,{e1, e2});
+                auto res=EvalEnv::apply(proc,{e1, e2},env);
                 return res;});
             }
             catch(LispError& e){
