@@ -11,13 +11,42 @@ std::unordered_map<std::string, ValuePtr>::iterator procDict::begin(){
 std::unordered_map<std::string, ValuePtr>::iterator procDict::end(){
     return dict.end();
 }
-void procDict::insert(const std::string& name, ValuePtr proc){
+void procDict::insert(const std::string& name, BuiltinFuncType* proc){
     if(dict.find(name)!=dict.end())
         throw LispError("Redefining a built-in procedure");
-    dict[name]=proc;
+    dict[name]=std::make_shared<BuiltinProcValue>(proc);
+}
+void procDict::loadProcs(){
+    insert("+", &add); insert("-", &sub); insert("*", &mult); insert("/", &divi);
+    insert("abs", &abs_); insert("expt", &expt); insert("quotient", &quotient); insert("modulo", &modulo); insert("remainder", &remainder_);
+
+    insert("eq?", &eq);
+    insert("equal?", &equal);
+    insert("not", &negation);
+    insert(">", &greater);
+    insert("<", &less);
+    insert(">=", &greater_equal);
+    insert("<=", &less_equal);
+    insert("=", &numeric_equal);
+    insert("even?", &even);
+    insert("odd?", &odd);
+    insert("zero?", &zero);
+    
+    insert("atom?", &is_atom);
+    insert("boolean?", &is_boolean);
+    insert("integer?", &is_integer);
+    insert("list?", &is_list);
+    insert("number?", &is_number);
+    insert("null?", &is_null);
+    insert("pair?", &is_pair);
+    insert("procedure?", &is_procedure);
+    insert("string?", &is_string);
+    insert("symbol?", &is_symbol);
+
+    insert("print", &print);
 }
 
-std::unordered_map<std::string,ValuePtr>procDict(){
+/*std::unordered_map<std::string,ValuePtr>procDict(){
     std::unordered_map<std::string,ValuePtr>procs;
     procs["+"]=std::make_shared<BuiltinProcValue>(&add);
     procs["-"]=std::make_shared<BuiltinProcValue>(&sub);
@@ -32,18 +61,16 @@ std::unordered_map<std::string,ValuePtr>procDict(){
 
     procs["eq?"]=std::make_shared<BuiltinProcValue>(&eq);
     procs["equal?"]=std::make_shared<BuiltinProcValue>(&equal);
-    procs["not"]=std::make_shared<BuiltinProcValue>(&negation);
-
-    procs[">"]=std::make_shared<BuiltinProcValue>(&greater);
+    procs["not"]=std::make_shared<BuiltinProcValue>(&negation);*/
+/*procs[">"]=std::make_shared<BuiltinProcValue>(&greater);
     procs["<"]=std::make_shared<BuiltinProcValue>(&less);
     procs[">="]=std::make_shared<BuiltinProcValue>(&greater_equal);
     procs["<="]=std::make_shared<BuiltinProcValue>(&less_equal);
     procs["="]=std::make_shared<BuiltinProcValue>(&numeric_equal);
     procs["even?"]=std::make_shared<BuiltinProcValue>(&even);
     procs["odd?"]=std::make_shared<BuiltinProcValue>(&odd);
-    procs["zero?"]=std::make_shared<BuiltinProcValue>(&zero);
-
-    procs["atom?"]=std::make_shared<BuiltinProcValue>(&is_atom);
+    procs["zero?"]=std::make_shared<BuiltinProcValue>(&zero);*/
+/*procs["atom?"]=std::make_shared<BuiltinProcValue>(&is_atom);
     procs["boolean?"]=std::make_shared<BuiltinProcValue>(&is_boolean);
     procs["integer?"]=std::make_shared<BuiltinProcValue>(&is_integer);
     procs["list?"]=std::make_shared<BuiltinProcValue>(&is_list);
@@ -52,9 +79,10 @@ std::unordered_map<std::string,ValuePtr>procDict(){
     procs["pair?"]=std::make_shared<BuiltinProcValue>(&is_pair);
     procs["procedure?"]=std::make_shared<BuiltinProcValue>(&is_procedure);
     procs["string?"]=std::make_shared<BuiltinProcValue>(&is_string);
-    procs["symbol?"]=std::make_shared<BuiltinProcValue>(&is_symbol);
-    return procs;
-}
+    procs["symbol?"]=std::make_shared<BuiltinProcValue>(&is_symbol);*/
+/*return procs;
+}*/
+
 //多参数过程
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init,int least_params){
     if(params.size()<least_params)

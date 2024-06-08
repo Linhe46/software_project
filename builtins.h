@@ -5,12 +5,16 @@
 #include <unordered_map>
 class procDict{
     static std::unordered_map<std::string,ValuePtr>dict;
+    void insert(const std::string& name, BuiltinFuncType* proc);
+    void loadProcs();
     public:
-        procDict(){}
+        procDict(){
+            if(dict.size()==0)
+                loadProcs();
+        }
         ValuePtr operator[](const std::string& name);
         static std::unordered_map<std::string, ValuePtr>::iterator begin();
         static std::unordered_map<std::string, ValuePtr>::iterator end();
-        void insert(const std::string& name, ValuePtr proc);
 };
 
 //std::unordered_map<std::string,ValuePtr>procDict();
