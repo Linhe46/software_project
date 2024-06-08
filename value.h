@@ -18,11 +18,14 @@ class Value{
         virtual std::string toString() const=0;
         bool isNil() const;
         bool isPair() const;
+        bool isList() const;
         bool isSelfEvaluating() const;
         bool isNumber() const;
         bool isSymbol() const;
         bool isProc() const;
         bool isLambda() const;
+        bool isBoolean() const;
+        bool isString() const;
         virtual std::vector<ValuePtr>toVector();
         std::optional<std::string> asSymbol() const;
         virtual double asNumber() const;

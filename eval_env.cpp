@@ -38,24 +38,27 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args){
 }
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
-    if (expr->isPair()){//PAIR型，即作为列表处理
+    //PAIR型，即作为列表处理
+    if (expr->isPair()){
         auto temp=expr.get();
         PairValue* expr=static_cast<PairValue*>(temp);
         //特殊式
         if(auto name=expr->getCar()->asSymbol())
-            if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())
-                return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//可能不存在，不能使用[]
+            if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())//特殊形式
+                return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//at()返回特殊过程的函数指针
         //过程式
-        ValuePtr proc=this->eval(expr->getCar());
+        ValuePtr proc=this->eval(expr->getCar());//求解过程
         ValuePtr right=expr->getCdr();
-        std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量
+        std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量作为过程的参数
         return this->apply(proc,args);
     }
-    else if (expr->isSelfEvaluating())//可自求值
+    //可自求值
+    else if (expr->isSelfEvaluating())
         return expr;
     else if(auto name=expr->asSymbol())
         return this->lookupBinding(name.value());
-    else if (expr->isNil())//禁止对空表求值
+    //禁止对空表求值
+    else if (expr->isNil())
         throw LispError("Evaluating nil is prohibited.");
     else
         throw LispError("Unimplemented in eval");

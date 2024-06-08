@@ -8,6 +8,15 @@ bool Value::isNil() const{
 bool Value::isPair() const{
     return typeid(*this)==typeid(PairValue);
 }
+//递归检查右半部分是否含有空表
+bool Value::isList() const{
+    if(this->isNil())
+        return 1;
+    else if(!this->isPair())
+        return 0;
+    auto pair=static_cast<const PairValue&>(*this);
+    return pair.getCdr()->isList();
+}
 bool Value::isSelfEvaluating() const{
     return typeid(*this)==typeid(NumericValue)||
     typeid(*this)==typeid(BooleanValue)||
@@ -24,6 +33,12 @@ bool Value::isProc() const{
 }
 bool Value::isLambda() const{
     return typeid(*this)==typeid(LambdaValue);
+}
+bool Value::isBoolean() const{
+    return typeid(*this)==typeid(BooleanValue);
+}
+bool Value::isString() const{
+    return typeid(*this)==typeid(StringValue);
 }
 std::vector<ValuePtr>Value::toVector(){//只处理列表
     throw LispError("Converted to vector failed");
