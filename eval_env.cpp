@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iterator>
 #include <ranges>
-
+#include <iostream>
 using namespace std::literals;
 
 EvalEnv::EvalEnv():parent{nullptr}{//初始化求值器
@@ -41,6 +41,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     //PAIR型，即作为列表处理
     if (expr->isPair()){
         auto temp=expr.get();
+        //std::cout<<temp->toString()<<'\n';
         PairValue* expr=static_cast<PairValue*>(temp);
         //特殊式
         if(auto name=expr->getCar()->asSymbol())

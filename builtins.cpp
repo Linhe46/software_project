@@ -112,7 +112,7 @@ ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,doub
     if(params.size()<least_params)
         throw LispError("At least "+ std::to_string(least_params)+ " param required");
     else{
-        double res=0;
+        double res=init;
         for(int i=0;i<params.size();i++){
             if(!params[i]->isNumber())
                 throw("Cannot calculate a non-numeric value");
@@ -309,7 +309,7 @@ ValuePtr odd(const std::vector<ValuePtr>& params,EvalEnv& env){
             double x=arg->asNumber();
             if(!isIntegar(x))
                 throw LispError("odd?: Cannot apply to non-integars");
-            return std::make_shared<BooleanValue>((int)x%2==1 ? true : false);
+            return std::make_shared<BooleanValue>((int)x%2==0 ? false : true);//负数存在，注意不能用x%2==1
         }
         else 
             throw LispError("odd?: Cannot apply to non-integars");
@@ -390,7 +390,7 @@ ValuePtr displayln(const std::vector<ValuePtr>& params,EvalEnv& env){
     catch (LispError& e){
         throw LispError("displayln: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     }
-    return newline(params,env);
+    return newline({},env);
 }
 ValuePtr error(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)

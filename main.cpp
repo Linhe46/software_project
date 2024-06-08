@@ -19,7 +19,7 @@ struct TestCtx {
 };
 
 int main() {
-    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv6);
+
     EvalEnvPtr env=EvalEnv::createGlobal();//全局求值环境
     while (true) {
         try {
