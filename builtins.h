@@ -23,37 +23,36 @@ using arithmeticType=double(*)(double,double);
 using numericCompareType=bool(*)(double,double);
 using typeCheckType=bool(*)(ValuePtr);
 
+bool isIntegar(double x);//删去更改为is_integer实现
+
+//算术库
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init, int least_params);
-ValuePtr add(const std::vector<ValuePtr>& params);
-ValuePtr sub(const std::vector<ValuePtr>& params);
-ValuePtr mult(const std::vector<ValuePtr>& params);
-ValuePtr divi(const std::vector<ValuePtr>& params);
-
-bool isIntegar(double x);
-
+BuiltinFuncType add;
+BuiltinFuncType sub;
+BuiltinFuncType mult;
+BuiltinFuncType divi;
 BuiltinFuncType abs_;
 BuiltinFuncType expt;
 BuiltinFuncType quotient;
 BuiltinFuncType modulo;
 BuiltinFuncType remainder_;
 
-
+//比较库
+ValuePtr numericCompare(const std::vector<ValuePtr>& params, numericCompareType func);
 BuiltinFuncType eq;
 BuiltinFuncType equal;
 BuiltinFuncType negation;
-
 BuiltinFuncType greater;
 BuiltinFuncType less;
 BuiltinFuncType less_equal;
 BuiltinFuncType greater_equal;
 BuiltinFuncType numeric_equal;
-
-
 BuiltinFuncType even;
 BuiltinFuncType odd;
 BuiltinFuncType zero;
 
 //类型检查库
+ValuePtr typeCheck(const std::vector<ValuePtr>&, typeCheckType, const std::string&);
 BuiltinFuncType is_atom;
 BuiltinFuncType is_boolean;
 BuiltinFuncType is_integer;

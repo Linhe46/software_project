@@ -209,6 +209,7 @@ ValuePtr remainder_(const std::vector<ValuePtr>& params){
             return std::make_shared<NumericValue>(x-y*(x/y > 0 ? std::floor(x/y) : std::ceil(x/y)));
         }
 }
+
 ValuePtr eq(const std::vector<ValuePtr>& params){
     if(params.size()!=2)
         throw LispError("eq?: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
@@ -229,7 +230,6 @@ ValuePtr eq(const std::vector<ValuePtr>& params){
             return std::make_shared<BooleanValue>(false);
     }
 }
-//语义相等
 ValuePtr equal(const std::vector<ValuePtr>& params){
     if(params.size()!=2)
         throw LispError("eq?: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
@@ -246,7 +246,6 @@ ValuePtr negation(const std::vector<ValuePtr>& params){
     auto arg=params[0];
     return std::make_shared<BooleanValue>(arg->toString()=="#f" ? true : false);
 }
-
 ValuePtr less(const std::vector<ValuePtr>& params){
     return numericCompare(params,[](double a,double b){return a<b;});
 }
@@ -313,28 +312,16 @@ ValuePtr print(const std::vector<ValuePtr>& params){
 }
 
 ValuePtr is_atom(const std::vector<ValuePtr>& params){
-    if(params.size()!=1)
-        throw LispError("atom?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
-    auto arg=params[0];
-    return std::make_shared<BooleanValue>(arg->isSelfEvaluating()||arg->isSymbol()||arg->isNil() ? true : false);
+    return typeCheck(params, [](ValuePtr arg){return arg->isSelfEvaluating()||arg->isSymbol()||arg->isNil();}, "atom?");
 }
 ValuePtr is_boolean(const std::vector<ValuePtr>& params){
-    if(params.size()!=1)
-        throw LispError("boolean?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
-    auto arg=params[0];
-    return std::make_shared<BooleanValue>(arg->isBoolean() ? true : false);
+    return typeCheck(params, [](ValuePtr arg){return arg->isBoolean();}, "boolean?");
 }
 ValuePtr is_integer(const std::vector<ValuePtr>& params){
-    if(params.size()!=1)
-        throw LispError("integer?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
-    auto arg=params[0];
-    return std::make_shared<BooleanValue>(arg->isNumber()&&arg->asNumber()==std::trunc(arg->asNumber())? true : false);
+    return typeCheck(params, [](ValuePtr arg){return arg->isNumber()&&arg->asNumber()==std::trunc(arg->asNumber());}, "integer?");
 }
 ValuePtr is_list(const std::vector<ValuePtr>& params){
-    if(params.size()!=1)
-        throw LispError("list?: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
-    auto arg=params[0];
-    return std::make_shared<BooleanValue>(arg->isList() ? true : false);
+    return typeCheck(params, [](ValuePtr arg){return arg->isList();}, "list?");
 }
 ValuePtr is_number(const std::vector<ValuePtr>& params){
     return typeCheck(params, [](ValuePtr arg){return arg->isNumber();}, "number?");
@@ -354,7 +341,6 @@ ValuePtr is_string(const std::vector<ValuePtr>& params){
 ValuePtr is_symbol(const std::vector<ValuePtr>& params){
     return typeCheck(params, [](ValuePtr arg){return arg->isSymbol();}, "symbol?");
 }
-
 
 
 bool isIntegar(double x){
