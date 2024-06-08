@@ -2,7 +2,15 @@
 #define BUILTINS_H
 
 #include "./value.h"
+#include "./eval_env.h"
 #include <unordered_map>
+#include <algorithm>
+#include <iterator>
+#include <ranges>
+#include <numeric>
+#include <functional>
+#include <stdexcept>
+
 class procDict{
     static std::unordered_map<std::string,ValuePtr>dict;
     void insert(const std::string& name, BuiltinFuncType* proc);
@@ -25,7 +33,7 @@ using typeCheckType=bool(*)(ValuePtr);
 
 bool isIntegar(double x);//删去更改为is_integer实现
 
-//算术库
+//算术库(9)
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init, int least_params);
 BuiltinFuncType add;
 BuiltinFuncType sub;
@@ -37,7 +45,7 @@ BuiltinFuncType quotient;
 BuiltinFuncType modulo;
 BuiltinFuncType remainder_;
 
-//比较库
+//比较库(11)
 ValuePtr numericCompare(const std::vector<ValuePtr>& params, numericCompareType func);
 BuiltinFuncType eq;
 BuiltinFuncType equal;
@@ -51,7 +59,7 @@ BuiltinFuncType even;
 BuiltinFuncType odd;
 BuiltinFuncType zero;
 
-//类型检查库
+//类型检查库(10)
 ValuePtr typeCheck(const std::vector<ValuePtr>&, typeCheckType, const std::string&);
 BuiltinFuncType is_atom;
 BuiltinFuncType is_boolean;
@@ -64,7 +72,7 @@ BuiltinFuncType is_procedure;
 BuiltinFuncType is_string;
 BuiltinFuncType is_symbol;
 
-//核心库
+//核心库(8)
 BuiltinFuncType apply;
 BuiltinFuncType display;
 BuiltinFuncType displayln;
@@ -73,4 +81,15 @@ BuiltinFuncType eval;
 BuiltinFuncType exit;
 BuiltinFuncType newline;
 BuiltinFuncType print;
+
+//对子与列表操作库(9)
+BuiltinFuncType append;
+BuiltinFuncType car;
+BuiltinFuncType cdr;
+BuiltinFuncType cons;
+BuiltinFuncType length;
+BuiltinFuncType list;
+BuiltinFuncType map;
+BuiltinFuncType filter;
+BuiltinFuncType reduce;//左折叠运算，只考虑算术计算
 #endif

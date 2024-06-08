@@ -17,8 +17,15 @@ void procDict::insert(const std::string& name, BuiltinFuncType* proc){
     dict[name]=std::make_shared<BuiltinProcValue>(proc);
 }
 void procDict::loadProcs(){
-    insert("+", &add); insert("-", &sub); insert("*", &mult); insert("/", &divi);
-    insert("abs", &abs_); insert("expt", &expt); insert("quotient", &quotient); insert("modulo", &modulo); insert("remainder", &remainder_);
+    insert("+", &add);
+    insert("-", &sub);
+    insert("*", &mult);
+    insert("/", &divi);
+    insert("abs", &abs_);
+    insert("expt", &expt);
+    insert("quotient", &quotient);
+    insert("modulo", &modulo);
+    insert("remainder", &remainder_);
 
     insert("eq?", &eq);
     insert("equal?", &equal);
@@ -44,6 +51,23 @@ void procDict::loadProcs(){
     insert("symbol?", &is_symbol);
 
     insert("print", &print);
+    insert("display", &display);
+    insert("displayln", &displayln);
+    insert("eval", &eval);
+    insert("error", &error);
+    insert("apply", &apply);
+    insert("exit", &exit);
+    insert("newline", &newline);
+
+    insert("append", &append);
+    insert("car", &car);
+    insert("cdr", &cdr);
+    insert("cons", &cons);
+    insert("length", &length);
+    insert("list", &list);
+    insert("map", &map);
+    insert("filter", &filter);
+    insert("reduce", &reduce);
 }
 
 /*std::unordered_map<std::string,ValuePtr>procDict(){
@@ -304,12 +328,6 @@ ValuePtr zero(const std::vector<ValuePtr>& params){
             throw LispError("zero?: Cannot apply to non-integars");
     }
 }
-ValuePtr print(const std::vector<ValuePtr>& params){
-    for(auto& i:params)
-        std::cout<<i->toString()<<' ';
-    std::cout<<"\n";
-    return std::make_shared<NilValue>();
-}
 
 ValuePtr is_atom(const std::vector<ValuePtr>& params){
     return typeCheck(params, [](ValuePtr arg){return arg->isSelfEvaluating()||arg->isSymbol()||arg->isNil();}, "atom?");
@@ -341,6 +359,199 @@ ValuePtr is_string(const std::vector<ValuePtr>& params){
 ValuePtr is_symbol(const std::vector<ValuePtr>& params){
     return typeCheck(params, [](ValuePtr arg){return arg->isSymbol();}, "symbol?");
 }
+
+ValuePtr apply(const std::vector<ValuePtr>& params){
+    if(params.size()!=2)
+        throw LispError("apply: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+    auto proc=params[0];
+    auto list=params[1];
+    if((!proc->isProc()&&!proc->isLambda())||!list->isList())
+        throw LispError("apply: Contract violation:\n expected: (apply <proc> <list>)");
+    return EvalEnv::apply(proc, list->toVector());
+}
+ValuePtr display(const std::vector<ValuePtr>& params){
+    if(params.size()!=1)
+        throw LispError("display: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    auto arg=params[0];
+    std::string ss;
+    if(arg->isString()){
+        ss=arg->toString();
+        if(ss.length()>=2 && ss.front()=='"' && ss.back()=='"')
+            ss=ss.substr(1,ss.length()-2);
+    }
+    else 
+        ss=arg->toString();
+    std::cout<<ss;
+    return std::make_shared<NilValue>();
+}
+ValuePtr displayln(const std::vector<ValuePtr>& params){
+    try{
+        display(params);}
+    catch (LispError& e){
+        throw LispError("displayln: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    }
+    return newline(params);
+}
+ValuePtr error(const std::vector<ValuePtr>& params){
+    if(params.size()==0)
+        throw LispError("");
+    else if(params.size()==1)
+        throw LispError(params[0]->toString());
+    else
+         throw LispError("error: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
+}
+ValuePtr eval(const std::vector<ValuePtr>& params ){
+    if(params.size()!=1)
+        throw LispError("eval: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    return 
+}
+ValuePtr exit(const std::vector<ValuePtr>& params){
+    if(params.size()==0||params.size()==1){
+        int code=0;
+        if(params.size()==1){
+            try{
+                if(is_integer(params))
+                    code=params[0]->asNumber();
+            }
+            catch (std::runtime_error&e){
+                throw LispError("exit: Contract violation:\n expected: (exit) (exit <val>)");
+            }
+        }
+        std::exit(code);
+    }
+    else
+        throw LispError("exit: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
+}
+ValuePtr newline(const std::vector<ValuePtr>& params){
+    if(params.size()!=0)
+        throw LispError("newline: Arguments mismatch:\n expected:0\n given: "+std::to_string(params.size()));
+    std::cout<<'\n';
+    return std::make_shared<NilValue>();
+}
+ValuePtr print(const std::vector<ValuePtr>& params){
+    if(params.size()==0)
+        throw LispError("newline: Arguments mismatch:\n expected:at least 1\n given: 0");
+    for(auto& i:params)
+        std::cout<<i->toString()<<' ';
+    std::cout<<"\n";
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr append(const std::vector<ValuePtr>& params){
+    if(params.size()==0)
+        return std::make_shared<NilValue>();
+    std::vector<ValuePtr>elems;
+    for(auto arg:params){
+        if(!arg->isList())
+            throw LispError("append: Contract violation:\n expected: (append <list>...)\n given: "+arg->toString());
+        auto list_elems=arg->toVector();
+        std::copy(list_elems.begin(),list_elems.end(),std::back_inserter(elems));
+    }
+    return std::make_shared<PairValue>(elems);
+}
+ValuePtr car(const std::vector<ValuePtr>& params){
+    if(params.size()!=1)
+        throw LispError("car: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    auto arg=params[0];
+    if(!arg->isPair())
+            throw LispError("car: Contract violation:\n expected: (car <pair>)\n given: "+arg->toString());
+    return static_cast<PairValue&>(*arg).getCar();
+}
+ValuePtr cdr(const std::vector<ValuePtr>& params){
+    if(params.size()!=1)
+        throw LispError("cdr: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    auto arg=params[0];
+    if(!arg->isPair())
+            throw LispError("cdr: Contract violation:\n expected: (cdr <pair>)\n given: "+arg->toString());
+    return static_cast<PairValue&>(*arg).getCdr();
+}
+ValuePtr cons(const std::vector<ValuePtr>& params){
+    if(params.size()!=2)
+        throw LispError("cons: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+    return std::make_shared<PairValue>(params[0],params[1]);
+}
+ValuePtr length(const std::vector<ValuePtr>& params){
+    if(params.size()!=1)
+        throw LispError("length: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+    auto arg=params[0];
+    if(!arg->isList())
+            throw LispError("length: Contract violation:\n expected: (length <list>)\n given: "+arg->toString());
+    return std::make_shared<NumericValue>(arg->toVector().size());
+}
+ValuePtr list(const std::vector<ValuePtr>& params){
+    if(params.size()==0)
+        return std::make_shared<NilValue>();
+    return std::make_shared<PairValue>(params);
+}
+ValuePtr map(const std::vector<ValuePtr>& params){
+    if(params.size()!=2)
+        throw LispError("map: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+    auto proc=params[0];
+    if(!(proc->isProc()||proc->isLambda()))
+        throw LispError("map: Contract violation:\n expected: (map <proc> <list>)\n given: "+proc->toString());
+    auto list=params[1];
+    if(!list->isList())
+        throw LispError("map: Contract violation:\n expected: (map <proc> <list>)\n given: "+proc->toString());
+    auto elems=list->toVector();
+    if(elems.size()==0)
+        return std::make_shared<NilValue>();
+    std::vector<ValuePtr>new_elems{};
+    std::transform(elems.begin(), elems.end(), std::back_inserter(new_elems),
+     [&](ValuePtr e){
+        return EvalEnv::apply(proc,{e});});
+    return std::make_shared<PairValue>(new_elems);
+}
+ValuePtr filter(const std::vector<ValuePtr>& params){
+    if(params.size()!=2)
+        throw LispError("filter: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+    auto proc=params[0];
+    if(!(proc->isProc()||proc->isLambda()))
+        throw LispError("filter: Contract violation:\n expected: (filter <proc> <list>)\n given: "+proc->toString());
+    auto list=params[1];
+    if(!list->isList())
+        throw LispError("filter: Contract violation:\n expected: (filter <proc> <list>)\n given: "+proc->toString());
+    auto elems=list->toVector();
+    if(elems.size()==0)
+        return std::make_shared<NilValue>();
+    std::vector<ValuePtr>new_elems{};
+    try{
+    std::copy_if(elems.begin(), elems.end(), std::back_inserter(new_elems),
+     [&](ValuePtr e){auto res= EvalEnv::apply(proc,{e});
+                    return res->isBoolean()&&res->toString()=="#f" ? false : true;});}
+    catch(LispError& e){
+        throw LispError("filter: Contract violation:\n expected: <proc> should accept one parameter\n given: "+proc->toString());
+    }
+    return std::make_shared<PairValue>(new_elems);
+}
+ValuePtr reduce(const std::vector<ValuePtr>& params){
+    if(params.size()!=2)
+        throw LispError("reduce: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+    auto proc=params[0];
+    if(!(proc->isProc()||proc->isLambda()))
+        throw LispError("reduce: Contract violation:\n expected: (reduce <proc> <list>)\n given: "+proc->toString());
+    auto list=params[1];
+    if(!list->isList())
+        throw LispError("reduce: Contract violation:\n expected: (reduce <proc> <list>)\n given: "+proc->toString());
+    else if(list->isNil())
+        throw LispError("reduce: Contract violation:\n expected: <list> cannot be a nil\n given: "+proc->toString());
+    else {
+        auto elems=list->toVector();
+        if(elems.size()==1)
+            return elems[0];
+        else{
+            try{
+            return std::accumulate(elems.begin()+1,elems.end(),elems[0],
+            [&](ValuePtr e1, ValuePtr e2){
+                auto res=EvalEnv::apply(proc,{e1, e2});
+                return res;});
+            }
+            catch(LispError& e){
+                throw LispError("reduce: Contract violation:\n expected: <proc> should accept two parameter and be numeric\n given: "+proc->toString());
+            }
+        }
+    }
+}
+
 
 
 bool isIntegar(double x){
