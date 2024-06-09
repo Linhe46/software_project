@@ -18,20 +18,8 @@ struct TestCtx {
         return result->toString();
     }
 };
-/*
-std::string readFromFile(const std::string& filename){
-    std::ifstream file(filename);
-    if(!file.is_open())//input文件不存在，退出
-        std::exit(1);
-    std::string s;
-    char x;
-    while(file.get(x))
-        s += x;
-    return s;
-}*/
-//./bin/mini_lisp D:\mini_lisp\src\test.txt
 int main(int argc, char* argv[]){
-    //RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
+    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
     EvalEnvPtr env=EvalEnv::createGlobal();//全局求值环境
     bool read_from_file=false;
     std::ifstream file;
@@ -65,3 +53,4 @@ int main(int argc, char* argv[]){
         }
     }
 }
+//./bin/mini_lisp D:\mini_lisp\src\test.txt

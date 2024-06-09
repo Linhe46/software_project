@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iterator>
 #include <ranges>
-#include <iostream>
+
 using namespace std::literals;
 
 EvalEnv::EvalEnv():parent{nullptr}{//初始化求值器
@@ -33,15 +33,13 @@ ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args,EvalEnv& env){
         return procVar(args, env);
     }
     else{
-        throw LispError("Unimplemented in apply");
+        throw LispError("Proc <"+proc->toString()+"> is not defined");
     }
 }
-
 ValuePtr EvalEnv::eval(ValuePtr expr) {
     //PAIR型，即作为列表处理
     if (expr->isPair()){
         auto temp=expr.get();
-        //std::cout<<temp->toString()<<'\n';
         PairValue* expr=static_cast<PairValue*>(temp);
         //特殊式
         if(auto name=expr->getCar()->asSymbol())
@@ -61,8 +59,9 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     //禁止对空表求值
     else if (expr->isNil())
         throw LispError("Evaluating nil is prohibited.");
-    else
+    else{
         throw LispError("Unimplemented in eval");
+    }
     return std::make_shared<NilValue>();
 }
 

@@ -171,10 +171,9 @@ ValuePtr letForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     auto lambda_form=std::make_shared<PairValue>(std::move(lambda_names),std::make_shared<PairValue>(param_values));//赋值
     return env.eval(std::move(lambda_form));
 }
-
 ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()==0)
-        return std::make_shared<SymbolValue>("`");
+        return std::make_shared<NilValue>();
     else if(args.size()>1)
         throw LispError("let: bad syntax (missing binding pairs or body)");
     auto elems=args[0]->toVector();
@@ -190,7 +189,6 @@ ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
         return e;});
     //return std::make_shared<PairValue>(new_elems);
     auto res=std::make_shared<PairValue>(new_elems);;
-    std::cout<<res->toString()<<'\n';
     return res;
 }
 ValuePtr unquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
