@@ -112,6 +112,7 @@ std::vector<ValuePtr>SymbolValue::toVector(){
 std::vector<ValuePtr>StringValue::toVector(){
     return {std::make_shared<StringValue>(value)};
 }
+
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     std::vector<ValuePtr>values;
     auto& pair=static_cast<PairValue&>(*this);

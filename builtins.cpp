@@ -521,7 +521,8 @@ ValuePtr filter(const std::vector<ValuePtr>& params,EvalEnv& env){
     catch(LispError& e){
         throw LispError("filter: Contract violation:\n expected: <proc> should accept one parameter\n given: "+proc->toString());
     }
-    return std::make_shared<PairValue>(std::make_shared<SymbolValue>("quasiquote"),std::make_shared<PairValue>(new_elems));
+    //return std::make_shared<PairValue>(std::make_shared<SymbolValue>("quasiquote"),std::make_shared<PairValue>(new_elems));
+    return std::make_shared<PairValue>(new_elems);
 }
 ValuePtr reduce(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)

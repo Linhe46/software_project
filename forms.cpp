@@ -177,6 +177,8 @@ ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     else if(args.size()>1)
         throw LispError("let: bad syntax (missing binding pairs or body)");
     auto elems=args[0]->toVector();
+    if(elems.size()==0)
+        return std::make_shared<NilValue>();
     std::vector<ValuePtr>new_elems{};
     std::transform(elems.begin(),elems.end(),std::back_inserter(new_elems),
     [&](ValuePtr e){

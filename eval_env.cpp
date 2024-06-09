@@ -24,19 +24,29 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     return result;
 }
 ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args,EvalEnv& env){
+    std::cout<<"Proc at "<<proc->toString()<<'\n';
+    for(auto arg:args)
+        std::cout<<arg->toString()<<'\n';
+    std::cout<<"-------------------------"<<'\n';
+    ValuePtr res=nullptr;
     if(proc->isLambda()){//lambda表达式
         auto lambda=static_cast<LambdaValue&>(*proc);
-        return lambda.apply(args);
+        //return lambda.apply(args);
+        res=lambda.apply(args);
     }
     else if(proc->isProc()){//内置过程
         auto procVar=static_cast<BuiltinProcValue&>(*proc);
-        return procVar(args, env);
+        //return procVar(args, env);
+        res=procVar(args, env);
     }
     else{
         throw LispError("Proc <"+proc->toString()+"> is not defined");
     }
+    std::cout<<"proc res  "<<res->toString()<<'\n';
+    return res;
 }
 ValuePtr EvalEnv::eval(ValuePtr expr) {
+    std::cout<<"expr at   "<<expr->toString()<<'\n';
     //PAIR型，即作为列表处理
     if (expr->isPair()){
         auto temp=expr.get();
