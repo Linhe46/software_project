@@ -151,25 +151,28 @@ ValuePtr letForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     std::vector<ValuePtr>param_names{};
     std::vector<ValuePtr>param_values{};
     std::vector<ValuePtr>param_body{};
-    for(auto arg:args[0]->toVector()){
+    for(auto arg:args[0]->toVector()){//局部变量绑定表
         if(arg->isPair()){
             auto binding_pair=static_cast<PairValue&>(*arg).toVector();
+
             auto name=binding_pair[0];
+            auto value=binding_pair[1];
             if(!name->isSymbol())
                 throw LispError("bad syntax (not an identifier and expression for a binding)");
-            auto value=env.eval(binding_pair[1]);
+
             param_names.push_back(name);
             param_values.push_back(value);
         }
         else 
             throw LispError("bad syntax (not an identifier and expression for a binding)");
     }
-    for(int i=1;i<args.size();i++)
-        param_body.push_back(args[i]);
-    auto lambda_body=std::make_shared<PairValue>(std::make_shared<PairValue>(param_names),std::make_shared<PairValue>(param_body));//获取lambda的形参表和过程体
-    auto lambda_names=std::make_shared<PairValue>(std::make_shared<SymbolValue>("lambda"),std::move(lambda_body));//构建lambda形式
-    auto lambda_form=std::make_shared<PairValue>(std::move(lambda_names),std::make_shared<PairValue>(param_values));//赋值
-    return env.eval(std::move(lambda_form));
+    ValuePtr proc_body=std::make_shared<PairValue>(args,1);//表达式列表
+    auto lambda_body=std::make_shared<PairValue>(std::make_shared<PairValue>(std::move(param_names)),std::move(proc_body));//lambda的形参和过程列表
+    auto lambda_form=std::make_shared<PairValue>(std::make_shared<SymbolValue>("lambda"),std::move(lambda_body));
+
+    param_values.insert(param_values.begin(),lambda_form);
+    auto lambda_form_apply=std::make_shared<PairValue>(param_values);
+    return env.eval(lambda_form_apply);
 }
 ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()==0)

@@ -88,7 +88,7 @@ std::string PairValue::toString() const{
         return "("+first->toString()+")";
     return "("+first->toString()+" . "+second->toString()+")";//右半部分不再是列表，点分隔，右括号闭合
 }
-PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),second(nullptr){//vector转换到Pair型
+PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),second(nullptr){//vector转换到列表
     if(args.size()<=0)
         throw("Vector to Pair Failed");
     first=args[pos];
