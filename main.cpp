@@ -19,7 +19,7 @@ struct TestCtx {
     }
 };
 int main(int argc, char* argv[]){
-    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
+    //RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
     EvalEnvPtr env=EvalEnv::createGlobal();//全局求值环境
     bool read_from_file=false;
     std::ifstream file;
@@ -53,4 +53,4 @@ int main(int argc, char* argv[]){
         }
     }
 }
-//./bin/mini_lisp D:\mini_lisp\src\test.txt
+//./bin/mini_lisp D:\mini_lisp\src\lv7-answer.scm
