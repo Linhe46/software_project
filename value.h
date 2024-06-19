@@ -37,7 +37,6 @@ class BooleanValue:public Value{
     public:
         BooleanValue(bool value):value{value}{}
         std::string toString() const override;
-        std::vector<ValuePtr>toVector() override;
 };
 class NumericValue:public Value{
     private:
@@ -46,7 +45,6 @@ class NumericValue:public Value{
         NumericValue(double value):value{value} {}
         std::string toString() const override;
         double asNumber()const override;
-        std::vector<ValuePtr>toVector() override;
 };
 class StringValue:public Value{
     private:
@@ -54,7 +52,6 @@ class StringValue:public Value{
     public:
         StringValue(const std::string& value):value{value}{}
         std::string toString() const override;
-        std::vector<ValuePtr>toVector() override;
 };
 class NilValue:public Value{
     public:
@@ -68,7 +65,6 @@ class SymbolValue:public Value{
     public:
         SymbolValue(const std::string& name):name{name}{}
         std::string toString() const override;
-        std::vector<ValuePtr>toVector() override;
 };
 class PairValue:public Value{
     private:

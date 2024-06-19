@@ -97,37 +97,22 @@ PairValue::PairValue(const std::vector<ValuePtr>& args, int pos):first(nullptr),
     else
         second=std::make_shared<PairValue>(args,++pos);
 }
+
 std::vector<ValuePtr>NilValue::toVector(){//单独转换空表，一定在末尾，可忽略
     return {};
 }
-std::vector<ValuePtr>NumericValue::toVector(){
-    return {std::make_shared<NumericValue>(value)};
-}
-std::vector<ValuePtr>BooleanValue::toVector(){
-    return {std::make_shared<BooleanValue>(value)};
-}
-std::vector<ValuePtr>SymbolValue::toVector(){
-    return {std::make_shared<SymbolValue>(name)};
-}
-std::vector<ValuePtr>StringValue::toVector(){
-    return {std::make_shared<StringValue>(value)};
-}
-
 std::vector<ValuePtr>PairValue::toVector(){//递归地转换为数组
     std::vector<ValuePtr>values;
+    if(!this->isList())
+        throw LispError("Error: Converting a Pair but not a List");
     auto& pair=static_cast<PairValue&>(*this);
-    //if(typeid(*pair.first)!=typeid(NilValue))
+
     values.push_back(pair.first);
-    if(typeid(*pair.second)==typeid(NilValue))//右半部分为空，递归出口
-        return values;
-    else if(typeid(*pair.second)==typeid(PairValue))//递归展开右半部分
-    {
-        auto child_vec=pair.second->toVector();
-        std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
-    }
-    else values.push_back(pair.second);
+    auto child_vec=pair.second->toVector();//列表的右半部分一定是列表
+    std::copy(child_vec.begin(),child_vec.end(),std::back_inserter(values));
     return values;
 }
+
 ValuePtr PairValue::getCdr() const{
     //return std::make_shared<PairValue>(std::make_shared<NilValue>(),this->second);
     return second;
