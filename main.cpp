@@ -6,6 +6,7 @@
 #include "./parser.h"
 #include "./tokenizer.h"
 #include "./value.h"
+
 #include "rjsj_test.hpp"
 
 struct TestCtx {
@@ -27,19 +28,39 @@ int main(int argc, char* argv[]){
         file=std::ifstream(argv[1]);
         if(file.is_open())
             read_from_file=true;
-        else std::exit(1);
+        else std::exit(1);//文件不存在
     }
     std::istream& input=(read_from_file ? file : std::cin);
     while (true) {
         try {
             if(!read_from_file)
                 std::cout << ">>> ";
-            if (input.eof()) {
-                std::exit(0);
+            //分行输入括号匹配
+            if(input.eof())
+                break;
+            char x;
+            int counter=0;
+            std::string input_std="";
+            while(input.get(x)){
+                if(x==char(26)){
+                    break;
+                }
+                if(x=='\n'){
+                    if(counter==0)
+                        break;
+                    else{
+                        input_std+=' ';
+                        continue;
+                    }                     
+                }
+                if(x=='(')
+                    counter++;
+                if(x==')')
+                    counter--;
+                input_std+=x;
             }
             std::string line;
-            std::getline(input, line);
-            //std::cout<<line<<'\n';
+            std::getline(std::stringstream(input_std), line);
             if(line=="")
                 continue;
             auto tokens = Tokenizer::tokenize(line);
@@ -49,7 +70,7 @@ int main(int argc, char* argv[]){
             if(!read_from_file)
                 std::cout << result->toString() << std::endl;
         } catch (std::runtime_error& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr <<"\033[31m"<<"Error: " << e.what() <<"\033[0m"<< std::endl;
         }
     }
 }

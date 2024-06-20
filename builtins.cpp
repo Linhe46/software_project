@@ -70,44 +70,7 @@ void procDict::loadProcs(){
     insert("reduce", &reduce);
 }
 
-/*std::unordered_map<std::string,ValuePtr>procDict(){
-    std::unordered_map<std::string,ValuePtr>procs;
-    procs["+"]=std::make_shared<BuiltinProcValue>(&add);
-    procs["-"]=std::make_shared<BuiltinProcValue>(&sub);
-    procs["*"]=std::make_shared<BuiltinProcValue>(&mult);
-    procs["/"]=std::make_shared<BuiltinProcValue>(&divi);
-
-    procs["abs"]=std::make_shared<BuiltinProcValue>(&abs_);
-    procs["expt"]=std::make_shared<BuiltinProcValue>(&expt);
-    procs["quotient"]=std::make_shared<BuiltinProcValue>(&quotient);
-    procs["modulo"]=std::make_shared<BuiltinProcValue>(&modulo);
-    procs["remainder"]=std::make_shared<BuiltinProcValue>(&remainder_);
-
-    procs["eq?"]=std::make_shared<BuiltinProcValue>(&eq);
-    procs["equal?"]=std::make_shared<BuiltinProcValue>(&equal);
-    procs["not"]=std::make_shared<BuiltinProcValue>(&negation);*/
-/*procs[">"]=std::make_shared<BuiltinProcValue>(&greater);
-    procs["<"]=std::make_shared<BuiltinProcValue>(&less);
-    procs[">="]=std::make_shared<BuiltinProcValue>(&greater_equal);
-    procs["<="]=std::make_shared<BuiltinProcValue>(&less_equal);
-    procs["="]=std::make_shared<BuiltinProcValue>(&numeric_equal);
-    procs["even?"]=std::make_shared<BuiltinProcValue>(&even);
-    procs["odd?"]=std::make_shared<BuiltinProcValue>(&odd);
-    procs["zero?"]=std::make_shared<BuiltinProcValue>(&zero);*/
-/*procs["atom?"]=std::make_shared<BuiltinProcValue>(&is_atom);
-    procs["boolean?"]=std::make_shared<BuiltinProcValue>(&is_boolean);
-    procs["integer?"]=std::make_shared<BuiltinProcValue>(&is_integer);
-    procs["list?"]=std::make_shared<BuiltinProcValue>(&is_list);
-    procs["number?"]=std::make_shared<BuiltinProcValue>(&is_number);
-    procs["null?"]=std::make_shared<BuiltinProcValue>(&is_null);
-    procs["pair?"]=std::make_shared<BuiltinProcValue>(&is_pair);
-    procs["procedure?"]=std::make_shared<BuiltinProcValue>(&is_procedure);
-    procs["string?"]=std::make_shared<BuiltinProcValue>(&is_string);
-    procs["symbol?"]=std::make_shared<BuiltinProcValue>(&is_symbol);*/
-/*return procs;
-}*/
-
-//多参数过程
+//算术库 比较库 类型检查库 模板
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init,int least_params){
     if(params.size()<least_params)
         throw LispError("At least "+ std::to_string(least_params)+ " param required");
@@ -115,7 +78,7 @@ ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,doub
         double res=init;
         for(int i=0;i<params.size();i++){
             if(!params[i]->isNumber())
-                throw("Cannot calculate a non-numeric value");
+                throw("Cannot calculate non-numeric values");
             if(i==0){
                 auto head=params[i]->asNumber();
                 res=(params.size()==1?(func(init,head)):head);
@@ -136,7 +99,7 @@ ValuePtr numericCompare(const std::vector<ValuePtr>& params, numericCompareType 
         auto left=params[pos];
         auto right=params[pos+1];
         if(!left->isNumber()||!right->isNumber())
-            throw LispError("Cannot compare non numeric values");
+            throw LispError("Cannot compare non-numeric values");
         if(!func(left->asNumber(),right->asNumber()))
             return std::make_shared<BooleanValue>(false);
         pos++;
@@ -168,17 +131,17 @@ ValuePtr divi(const std::vector<ValuePtr>& params,EvalEnv& env){//默认参数�
 }
 ValuePtr abs_(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
-        throw LispError("abs: arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
+        throw LispError("abs: Arguments mismatch:\n expected:1\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber())
-        throw LispError("Cannot compare non numeric values");
+        throw LispError("Cannot calculate non-numeric values");
     else 
         return std::make_shared<NumericValue>(std::abs(params[0]->asNumber()));
 }
 ValuePtr expt(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
-        throw LispError("expt: arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+        throw LispError("expt: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
-        throw LispError("Cannot compare non numeric values");
+        throw LispError("Cannot calculate non-numeric values");
     else 
         {
             double x=params[0]->asNumber(),y=params[1]->asNumber();
@@ -191,7 +154,7 @@ ValuePtr quotient(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("quotient: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
-        throw LispError("Cannot compare non numeric values");
+        throw LispError("Cannot calculate non-numeric values");
     else
         {
             double x=params[0]->asNumber(),y=params[1]->asNumber();
@@ -205,7 +168,7 @@ ValuePtr modulo(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("modulo: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
-        throw LispError("Cannot compare non numeric values");
+        throw LispError("Cannot calculate non-numeric values");
     else
         {
             double x=params[0]->asNumber(),y=params[1]->asNumber();
@@ -224,7 +187,7 @@ ValuePtr remainder_(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
         throw LispError("remainder: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     else if(!params[0]->isNumber()||!params[1]->isNumber())
-        throw LispError("Cannot compare non numeric values");
+        throw LispError("Cannot calculate non-numeric values");
     else
         {
             double x=params[0]->asNumber(),y=params[1]->asNumber();
@@ -293,11 +256,11 @@ ValuePtr even(const std::vector<ValuePtr>& params,EvalEnv& env){
         if(arg->isNumber()){
             double x=arg->asNumber();
             if(!isIntegar(x))
-                throw LispError("even?: Cannot apply to non-integars");
+                throw LispError("even?: Contract violation\n expected: integer\n given: "+arg->toString());
             return std::make_shared<BooleanValue>((int)x%2==0 ? true : false);
         }
         else 
-            throw LispError("even?: Cannot apply to non-integars");
+            throw LispError("even?: Contract violation\n expected: integer\n given: "+arg->toString());
     }
 }
 ValuePtr odd(const std::vector<ValuePtr>& params,EvalEnv& env){
@@ -308,11 +271,11 @@ ValuePtr odd(const std::vector<ValuePtr>& params,EvalEnv& env){
         if(arg->isNumber()){
             double x=arg->asNumber();
             if(!isIntegar(x))
-                throw LispError("odd?: Cannot apply to non-integars");
+                throw LispError("odd?: Contract violation\n expected: integer\n given: "+arg->toString());
             return std::make_shared<BooleanValue>((int)x%2==0 ? false : true);//负数存在，注意不能用x%2==1
         }
         else 
-            throw LispError("odd?: Cannot apply to non-integars");
+            throw LispError("odd?: Contract violation\n expected: integer\n given: "+arg->toString());
     }
 }
 ValuePtr zero(const std::vector<ValuePtr>& params,EvalEnv& env){
@@ -325,7 +288,7 @@ ValuePtr zero(const std::vector<ValuePtr>& params,EvalEnv& env){
             return std::make_shared<BooleanValue>(x==0 ? true : false);
         }
         else 
-            throw LispError("zero?: Cannot apply to non-integars");
+            throw LispError("zero?: Contract violation\n expected: numeric\n given: "+arg->toString());
     }
 }
 
@@ -503,13 +466,13 @@ ValuePtr map(const std::vector<ValuePtr>& params,EvalEnv& env){
 }
 ValuePtr filter(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
-        throw LispError("filter: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+        throw SyntaxError("filter: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
     if(!(proc->isProc()||proc->isLambda()))
         throw LispError("filter: Contract violation:\n expected: (filter <proc> <list>)\n given: "+proc->toString());
     auto list=params[1];
     if(!list->isList())
-        throw LispError("filter: Contract violation:\n expected: (filter <proc> <list>)\n given: "+proc->toString());
+        throw LispError("filter: Contract violation:\n expected: (filter <proc> <list>)\n given: "+list->toString());
     auto elems=list->toVector();
     if(elems.size()==0)
         return std::make_shared<NilValue>();
@@ -528,15 +491,15 @@ ValuePtr filter(const std::vector<ValuePtr>& params,EvalEnv& env){
 }
 ValuePtr reduce(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=2)
-        throw LispError("reduce: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
+        throw SyntaxError("reduce: Arguments mismatch:\n expected:2\n given: "+std::to_string(params.size()));
     auto proc=params[0];
     if(!(proc->isProc()||proc->isLambda()))
         throw LispError("reduce: Contract violation:\n expected: (reduce <proc> <list>)\n given: "+proc->toString());
     auto list=params[1];
     if(!list->isList())
-        throw LispError("reduce: Contract violation:\n expected: (reduce <proc> <list>)\n given: "+proc->toString());
+        throw LispError("reduce: Contract violation:\n expected: (reduce <proc> <list>)\n given: "+list->toString());
     else if(list->isNil())
-        throw LispError("reduce: Contract violation:\n expected: <list> cannot be a nil\n given: "+proc->toString());
+        throw LispError("reduce: Contract violation:\n expected: <list> cannot be a nil");
     else {
         auto elems=list->toVector();
         if(elems.size()==1)
@@ -554,8 +517,6 @@ ValuePtr reduce(const std::vector<ValuePtr>& params,EvalEnv& env){
         }
     }
 }
-
-
 
 bool isIntegar(double x){
     return std::floor(x)==x;

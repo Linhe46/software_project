@@ -24,42 +24,40 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr expr) {
     return result;
 }
 ValuePtr EvalEnv::apply(ValuePtr proc,std::vector<ValuePtr>args,EvalEnv& env){
-    //std::cout<<"Proc at "<<proc->toString()<<'\n';
-    //for(auto arg:args)
-        //std::cout<<arg->toString()<<'\n';
-
     ValuePtr res=nullptr;
     if(proc->isLambda()){//lambda表达式
         auto lambda=static_cast<LambdaValue&>(*proc);
-        //return lambda.apply(args);
         res=lambda.apply(args);
     }
     else if(proc->isProc()){//内置过程
         auto procVar=static_cast<BuiltinProcValue&>(*proc);
-        //return procVar(args, env);
         res=procVar(args, env);
     }
     else{
-        throw LispError("Proc <"+proc->toString()+"> is not defined");
+        throw LispError("application: not a procedure:\n expect a procedure that can be applied to arguments\n given: "+proc->toString());
     }
-    //std::cout<<"proc res  "<<res->toString()<<'\n';
     return res;
 }
 ValuePtr EvalEnv::eval(ValuePtr expr) {
-    //std::cout<<"expr at   "<<expr->toString()<<'\n';
-    //PAIR型，即作为列表处理
+    //PAIR型
     if (expr->isPair()){
-        auto temp=expr.get();
-        PairValue* expr=static_cast<PairValue*>(temp);
-        //特殊式
-        if(auto name=expr->getCar()->asSymbol())
-            if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())//特殊形式
-                return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//at()返回特殊过程的函数指针
-        //过程式
-        ValuePtr proc=this->eval(expr->getCar());//求解过程
-        ValuePtr right=expr->getCdr();
-        std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量作为过程的参数
-        return this->apply(proc,args,*this);
+        //应当为列表
+        if(expr->isList()){
+            auto temp=expr.get();
+            PairValue* expr=static_cast<PairValue*>(temp);
+            //特殊式
+            if(auto name=expr->getCar()->asSymbol())
+                if(SPECIAL_FORMS.find(name.value())!=SPECIAL_FORMS.end())//特殊形式
+                    return SPECIAL_FORMS.at(name.value())(expr->getCdr()->toVector(),*this);//at()返回特殊过程的函数指针
+            //过程式
+            ValuePtr proc=this->eval(expr->getCar());//求解过程
+            ValuePtr right=expr->getCdr();
+            std::vector<ValuePtr>args=evalList(std::move(right));//剩余的变量作为过程的参数
+            return this->apply(proc,args,*this);
+        }
+        else
+            //return expr;
+            throw SyntaxError("Bad syntax: Malformed List");
     }
     //可自求值
     else if (expr->isSelfEvaluating())
@@ -86,7 +84,7 @@ ValuePtr EvalEnv::lookupBinding(std::string name){
     else if(parent)//向上级环境查找
         return parent->lookupBinding(std::move(name));
     else
-        throw LispError("Variable "+name+" not defined.");
+        throw LispError("Variable "+name+" is not defined yet.");
 }
 EvalEnvPtr EvalEnv::createGlobal(){
     return EvalEnvPtr(new EvalEnv());

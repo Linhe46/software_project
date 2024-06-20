@@ -31,7 +31,7 @@ using arithmeticType=double(*)(double,double);
 using numericCompareType=bool(*)(double,double);
 using typeCheckType=bool(*)(ValuePtr);
 
-bool isIntegar(double x);//删去更改为is_integer实现
+bool isIntegar(double x);//是否为整数
 
 //算术库(9)
 ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,double init, int least_params);

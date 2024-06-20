@@ -1,3 +1,12 @@
+(define (quick-sort lst)
+  (if (null? lst)
+      '()
+      (let ((pivot (car lst))
+            (rest (cdr lst)))
+        (let ((less (filter (lambda (x) (< x pivot)) rest))
+              (greater (filter (lambda (x) (>= x pivot)) rest)))
+          (append (quick-sort less) (list pivot) (quick-sort greater))))))
+
 (define (filter predicate list)
   (if (null? list)
       '()
@@ -5,17 +14,5 @@
           (cons (car list) (filter predicate (cdr list)))
           (filter predicate (cdr list)))))
 
-(define (right pivot x) (< x pivot))
-(define (left pivot x) (>= x pivot))
-
-(define (divide_sort arr)
-  (if (null? arr)
-      '()
-      (let ((pivot (car arr))
-            (rest (cdr arr)))
-        (let ((arr_left (filter (lambda (x) (left pivot x)) rest))
-              (arr_right (filter (lambda (x) (right pivot x)) rest)))
-          (append (divide_sort arr_left) (list pivot) (divide_sort arr_right))))))
-
-(define x (list 12 71 2 15 29 82 87 8 18 66 81 25 63 97 40 3 93 58 53 31 47))
-(print (divide_sort x))
+(define lst (list 12 71 2 15 29 82 87 8 18 66 81 25 63 97 40 3 93 58 53 31 47))
+(print (quick-sort lst))
