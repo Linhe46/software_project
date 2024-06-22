@@ -78,7 +78,7 @@ ValuePtr arithmetic(const std::vector<ValuePtr>& params,arithmeticType func,doub
         double res=init;
         for(int i=0;i<params.size();i++){
             if(!params[i]->isNumber())
-                throw("Cannot calculate non-numeric values");
+                throw LispError("Cannot calculate non-numeric values");
             if(i==0){
                 auto head=params[i]->asNumber();
                 res=(params.size()==1?(func(init,head)):head);
@@ -112,7 +112,6 @@ ValuePtr typeCheck(const std::vector<ValuePtr>& params, typeCheckType func, cons
     auto arg=params[0];
     return std::make_shared<BooleanValue>(func(arg) ? true : false);
 }
-
 
 ValuePtr add(const std::vector<ValuePtr>& params,EvalEnv& env){
     return arithmetic(params,[](double a,double b){return a+b;},0,0);
@@ -255,7 +254,7 @@ ValuePtr even(const std::vector<ValuePtr>& params,EvalEnv& env){
         auto arg=params[0];
         if(arg->isNumber()){
             double x=arg->asNumber();
-            if(!isIntegar(x))
+            if(std::floor(x)!=x)
                 throw LispError("even?: Contract violation\n expected: integer\n given: "+arg->toString());
             return std::make_shared<BooleanValue>((int)x%2==0 ? true : false);
         }
@@ -270,7 +269,7 @@ ValuePtr odd(const std::vector<ValuePtr>& params,EvalEnv& env){
         auto arg=params[0];
         if(arg->isNumber()){
             double x=arg->asNumber();
-            if(!isIntegar(x))
+            if(std::floor(x)!=x)
                 throw LispError("odd?: Contract violation\n expected: integer\n given: "+arg->toString());
             return std::make_shared<BooleanValue>((int)x%2==0 ? false : true);//负数存在，注意不能用x%2==1
         }
@@ -357,11 +356,11 @@ ValuePtr displayln(const std::vector<ValuePtr>& params,EvalEnv& env){
 }
 ValuePtr error(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()==0)
-        throw LispError("");
+        throw std::runtime_error("");
     else if(params.size()==1)
-        throw LispError(params[0]->toString());
+        throw std::runtime_error(params[0]->toString());
     else
-         throw LispError("error: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
+         throw std::runtime_error("error: Arguments mismatch:\n expected:0 or 1\n given: "+std::to_string(params.size()));
 }
 ValuePtr eval(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
@@ -408,9 +407,13 @@ ValuePtr append(const std::vector<ValuePtr>& params,EvalEnv& env){
         if(!arg->isList())
             throw LispError("append: Contract violation:\n expected: (append <list>...)\n given: "+arg->toString());
         auto list_elems=arg->toVector();
-        std::copy(list_elems.begin(),list_elems.end(),std::back_inserter(elems));
+        if(list_elems.size()!=0)
+            std::copy(list_elems.begin(),list_elems.end(),std::back_inserter(elems));
     }
-    return std::make_shared<PairValue>(elems);
+    if(elems.size()!=0)
+        return std::make_shared<PairValue>(elems);
+    else
+        return std::make_shared<NilValue>();
 }
 ValuePtr car(const std::vector<ValuePtr>& params,EvalEnv& env){
     if(params.size()!=1)
@@ -516,8 +519,4 @@ ValuePtr reduce(const std::vector<ValuePtr>& params,EvalEnv& env){
             }
         }
     }
-}
-
-bool isIntegar(double x){
-    return std::floor(x)==x;
 }

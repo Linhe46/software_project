@@ -1,6 +1,6 @@
 #include "./forms.h"
 #include <optional>
-//#include <iostream>
+
 const std::unordered_map<std::string, SpecialFormType*> SPECIAL_FORMS{
     {"define",defineForm},
     {"quote",quoteForm},
@@ -17,14 +17,14 @@ const std::unordered_map<std::string, SpecialFormType*> SPECIAL_FORMS{
 ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
     if(auto name=args[0]->asSymbol()){
         if(args.size()<2)
-            throw LispError("Malformed Define");
+            throw LispError("define: bad syntax (missing name or body)");
         auto first=name.value();
         auto second=env.eval(args[1]);
         env.defineBinding(std::move(first),std::move(second));
     }
     else if(args[0]->isPair()){//转换为lambda
         if(args.size()<2)
-                    throw SyntaxError("Malformed Define");
+                    throw LispError("define: bad syntax (missing name or body)");
         auto proc_args=args[0]->toVector();
         if(auto name=proc_args[0]->asSymbol()){//定义过程名
             ValuePtr proc_params=static_cast<PairValue&>(*args[0]).getCdr();//形参列表
@@ -34,11 +34,10 @@ ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
             auto lambda=std::make_shared<PairValue>(std::move(lambda_arg),std::make_shared<NilValue>());//包装为lambda表达式
             auto proc=std::make_shared<PairValue>(std::make_shared<SymbolValue>(name.value()),std::move(lambda));
             auto lambda_form_define=std::make_shared<PairValue>(std::make_shared<SymbolValue>("define"),std::move(proc));
-            //std::cout<<*lambda_form_define<<"\n";
             env.eval(lambda_form_define);//形如(define f (lambda (x..) y...))
     }   }
     else{
-        throw LispError("Malformed Define");
+         throw LispError("define: bad syntax (missing name or body)");
     }
     return std::make_shared<NilValue>();
 }
@@ -52,7 +51,7 @@ ValuePtr quoteForm(const std::vector<ValuePtr>&args, EvalEnv& env){
 }
 ValuePtr conditionForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()<2)
-        throw LispError("Less than two clause");
+        throw LispError("if: bad syntax (missing conditions)");
     if(env.eval(args[0])->toString()=="#f"){
         try{
             return env.eval(args.at(2));
@@ -91,12 +90,9 @@ ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env){
         for(const auto x:param_list){
             if(auto name=x->asSymbol())
                 params.push_back(name.value());
-            else throw LispError("Non-identifier in lambda params");//非symbol型
+            else throw LispError("lambda: bad syntax (Non-identifier in lambda params)");//非symbol型
         }
-    //检查是否均为符号？
     auto body=PairValue(args).getCdr()->toVector();//右半部分为过程表达式
-    //for(auto pt:body)
-     //std::cout<<*pt<<'\n';
     return std::make_shared<LambdaValue>(params,body,env.shared_from_this());
 }
 ValuePtr condForm(const std::vector<ValuePtr>& args, EvalEnv& env){
@@ -158,13 +154,13 @@ ValuePtr letForm(const std::vector<ValuePtr>& args, EvalEnv& env){
             auto name=binding_pair[0];
             auto value=binding_pair[1];
             if(!name->isSymbol())
-                throw LispError("bad syntax (not an identifier and expression for a binding)");
+                throw LispError("let: bad syntax (not an identifier and expression for a binding)");
 
             param_names.push_back(name);
             param_values.push_back(value);
         }
         else 
-            throw LispError("bad syntax (not an identifier and expression for a binding)");
+            throw LispError("let: bad syntax (not an identifier and expression for a binding)");
     }
     ValuePtr proc_body=std::make_shared<PairValue>(args,1);//表达式列表
     auto lambda_body=std::make_shared<PairValue>(std::make_shared<PairValue>(std::move(param_names)),std::move(proc_body));//lambda的形参和过程列表
@@ -178,7 +174,7 @@ ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()==0)
         return std::make_shared<NilValue>();
     else if(args.size()>1)
-        throw LispError("let: bad syntax (missing binding pairs or body)");
+        throw LispError("quasiquote: bad syntax (too many clauses)");
     auto elems=args[0]->toVector();
     if(elems.size()==0)
         return std::make_shared<NilValue>();
@@ -192,10 +188,9 @@ ValuePtr quasiquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
             }
         }
         return e;});
-    //return std::make_shared<PairValue>(new_elems);
     auto res=std::make_shared<PairValue>(new_elems);;
     return res;
 }
 ValuePtr unquoteForm(const std::vector<ValuePtr>& args, EvalEnv& env){
-   throw LispError("unquote: bad syntax (only used in quasiquote syntax)");//显示调用是未定义行为
+   throw LispError("unquote: bad syntax (only used in quasiquote syntax)");//显式调用是未定义行为
 }

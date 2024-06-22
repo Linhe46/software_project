@@ -23,6 +23,12 @@ TokenPtr Tokenizer::nextToken(int& pos) {
         } else if (c == '#') {
             if (auto result = BooleanLiteralToken::fromChar(input[pos + 1])) {
                 pos += 2;
+                while(pos<input.size()){
+                    if(input[pos]==' '||TOKEN_END.contains(input[pos]))
+                        return result;
+                    else
+                        throw SyntaxError("Unexpected character after #");
+                }
                 return result;
             } else {
                 throw SyntaxError("Unexpected character after #");

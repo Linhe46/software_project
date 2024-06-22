@@ -30,7 +30,7 @@ ValuePtr Parser::parse() {
                 this->parse(),
                 std::make_shared<NilValue>()));
     } else
-        throw SyntaxError("Unimplemented");
+        throw SyntaxError("Unimplemented tokens");
 }
 ValuePtr Parser::parseTails() {
     if (tokens.front()->getType() == TokenType::RIGHT_PAREN) {
@@ -42,7 +42,7 @@ ValuePtr Parser::parseTails() {
         tokens.pop_front();
         auto cdr = this->parse();
         if (tokens.front()->getType() != TokenType::RIGHT_PAREN)
-            throw SyntaxError("Unimplemented");
+            throw SyntaxError("Bad syntax: Unclosed brackets.");
         tokens.pop_front();
         return std::make_shared<PairValue>(car, cdr);
     } else {

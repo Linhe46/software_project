@@ -48,6 +48,8 @@ int main(int argc, char* argv[]){
                 if(x=='\n'){
                     if(counter==0)
                         break;
+                    else if(counter<0)
+                        throw SyntaxError("Bad syntax: Unclosed brackets.");
                     else{
                         input_std+=' ';
                         continue;
@@ -69,7 +71,13 @@ int main(int argc, char* argv[]){
             auto result = env->eval(std::move(value));
             if(!read_from_file)
                 std::cout << result->toString() << std::endl;
-        } catch (std::runtime_error& e) {
+        } catch (SyntaxError& e) {
+            std::cerr <<"\033[31m"<<"SyntaxError: " << e.what() <<"\033[0m"<< std::endl;
+        }
+        catch (LispError& e) {
+            std::cerr <<"\033[31m"<<"LispError: " << e.what() <<"\033[0m"<< std::endl;
+        }
+        catch (std::runtime_error& e) {
             std::cerr <<"\033[31m"<<"Error: " << e.what() <<"\033[0m"<< std::endl;
         }
     }
