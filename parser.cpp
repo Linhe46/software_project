@@ -22,13 +22,12 @@ ValuePtr Parser::parse() {
         return std::make_shared<SymbolValue>(value);
     } else if (token->getType() == TokenType::LEFT_PAREN) {
         return this->parseTails();
-    } else if (isQuotes.find(token->getType()) != isQuotes.end()) {//三种引号
+    } else if (isQuotes.find(token->getType()) != isQuotes.end()) {  // 三种引号
         std::string quote_type = isQuotes[token->getType()];
         return std::make_shared<PairValue>(
             std::make_shared<SymbolValue>(quote_type),
-            std::make_shared<PairValue>(
-                this->parse(),
-                std::make_shared<NilValue>()));
+            std::make_shared<PairValue>(this->parse(),
+                                        std::make_shared<NilValue>()));
     } else
         throw SyntaxError("Unimplemented tokens");
 }
