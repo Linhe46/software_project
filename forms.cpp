@@ -15,7 +15,9 @@ const std::unordered_map<std::string, SpecialFormType*> SPECIAL_FORMS{
     {"unquote", unquoteForm}
 };
 ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
-    if(auto name=args[0]->asSymbol()){
+    if(args[0]->isNil())
+        throw LispError("define : bad syntax (missing name)");
+    else if(auto name=args[0]->asSymbol()){
         if(args.size()<2)
             throw LispError("define: bad syntax (missing name or body)");
         auto first=name.value();
@@ -66,22 +68,24 @@ ValuePtr conditionForm(const std::vector<ValuePtr>& args, EvalEnv& env){
 ValuePtr andForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()==0)
         return std::make_shared<BooleanValue>(true);
+    ValuePtr res;
     for(const auto& param:args){
-        auto res=env.eval(param);
+        res=env.eval(param);
         if(res->toString()=="#f")
             return res;
     }
-    return env.eval(*args.rbegin());
+    return res;
 }
 ValuePtr orForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     if(args.size()==0)
         return std::make_shared<BooleanValue>(false);
+    ValuePtr res;
     for(const auto& param:args){
-        auto res=env.eval(param);
+        res=env.eval(param);
         if(res->toString()!="#f")
             return res;
     }
-    return env.eval(*args.rbegin());
+    return res;
 }
 ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env){
     auto param_list=args[0]->toVector();//形参表
