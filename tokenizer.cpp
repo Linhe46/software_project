@@ -45,10 +45,19 @@ TokenPtr Tokenizer::nextToken(int& pos) {
                         throw SyntaxError("Unexpected end of string literal");
                     }
                     auto next = input[pos + 1];
-                    if (next == 'n') {
-                        string += '\n';
-                    } else {
-                        string += next;
+                    switch(next){
+                        case 'n':string += '\n';break;
+                        case 't':string += '\t';break;
+                        case '\\':string += '\\';break;
+                        case '\'':string += '\'';break;
+                        case '\"':string += '\"';break;
+                        case 'r':string += '\r';break;
+                        case 'b':string += '\b';break;
+                        case 'f':string += '\f';break;
+                        case 'a':string += '\a';break;
+                        case 'v':string += '\v';break;
+                        case '0':string += '\0';break;
+                        default: string+=next;break;
                     }
                     pos += 2;
                 } else {
