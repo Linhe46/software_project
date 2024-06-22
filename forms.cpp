@@ -15,7 +15,7 @@ const std::unordered_map<std::string, SpecialFormType*> SPECIAL_FORMS{
     {"unquote", unquoteForm}
 };
 ValuePtr defineForm(const std::vector<ValuePtr>&args, EvalEnv& env){
-    if(args[0]->isNil())
+    if(args.size()==0)
         throw LispError("define : bad syntax (missing name)");
     else if(auto name=args[0]->asSymbol()){
         if(args.size()<2)
