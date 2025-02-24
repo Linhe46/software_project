@@ -5,6 +5,12 @@ bin
 .xmake
 build
 .cache
+Makefile
+CMakeCache.txt
+CMakeFiles
+newfunction
+.editorconfig
+.clang-format
 
 # VS Code
 .vscode/*
