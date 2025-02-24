@@ -1,3 +1,0 @@
-D:/mini_lisp/CMakeFiles/mini_lisp.dir
-D:/mini_lisp/CMakeFiles/edit_cache.dir
-D:/mini_lisp/CMakeFiles/rebuild_cache.dir
