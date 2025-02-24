@@ -20,9 +20,9 @@
 > 你每次新建文件后，你可能需要重新配置项目——执行上方说明中关于 `configure` 任务的描述。
 
 # Build
-cd mini_lisp
-cmake -G "MinGW Makefiles" .  // if use mingw32 compiler
+cd mini_lisp  
+cmake -G "MinGW Makefiles" .  // if use mingw32 compiler  
 make
 # Usage
-./bin/mini_lisp.exe <filename>  // file input mode
-./bin/mini_lisp.exe             // command line mode
+./bin/mini_lisp.exe <filename>  // file input mode  
+./bin/mini_lisp.exe             // command line mode  
