@@ -24,5 +24,5 @@ cd mini_lisp
 cmake -G "MinGW Makefiles" .  // if use mingw32 compiler  
 make
 # Usage
-./bin/mini_lisp.exe <filename>  // file input mode  
+./bin/mini_lisp.exe \<filename\>  // file input mode  
 ./bin/mini_lisp.exe             // command line mode  
