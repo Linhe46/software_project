@@ -8,6 +8,7 @@ build
 Makefile
 CMakeCache.txt
 CMakeFiles
+cmake_install*
 newfunction
 .editorconfig
 .clang-format
